@@ -3,7 +3,7 @@
         <alert-component :texto-alerta="textoAlerta" :tipo='tipoAlerta' v-if="alerta == true"/>
         <card-padrao-component>
             <template v-slot:titulo>
-                Funcionarios
+                <div class="mr-3">Funcionarios</div>
                 <v-spacer></v-spacer>
                 <v-text-field
                     v-model="search"
@@ -184,7 +184,7 @@ export default {
         },
 
         editarFuncionario(item) {
-            debugger
+            
             this.dialog = !this.dialog
 
             this.dadosEdicaoUsuario = {}
@@ -192,7 +192,7 @@ export default {
             this.dadosEdicaoUsuario = {
                 Id: item.Id,
                 Nome: item.Nome,
-                DataCadastro: this.FormatDate(new Date(item.DataCadastro).toISOString().substring(0,10)),
+                DataCadastro: item.DataCadastro,
                 Telefone: item.Telefone,
                 Login: item.Login,
                 Senha: item.Senha,

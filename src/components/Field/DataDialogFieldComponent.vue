@@ -57,10 +57,6 @@ export default {
     }),
 
     methods: {
-        CurrentDate() {
-            return new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)
-        },
-
         RetornoData() {
             this.$emit('retornoData', this.dateFormatted)
         },
@@ -69,7 +65,7 @@ export default {
         disablePastDates(val) {
             
             if (this.regraDesabilitaCampos != null) {
-                return val >= (this.CurrentDate()).toISOString().substring(0, 10) && this.regraDesabilitaCampos.split(';').some((x) => new Date(val).getDay() == x)
+                return val >= this.parseDate(new Date().toLocaleDateString()) && this.regraDesabilitaCampos.split(';').some((x) => new Date(val).getDay() == x)
             }
 
             return val
@@ -94,10 +90,14 @@ export default {
         date (val) {
             this.dateFormatted = this.FormatDate(this.date)
         },
+        dateFormatted(val) {
+            debugger
+            this.$emit('retornoData', this.dateFormatted)
+        }
     },
 
     created() {
-        this.verificarData(this.CurrentDate())
+        this.verificarData(this.currentDate)
     },
 
     props: {

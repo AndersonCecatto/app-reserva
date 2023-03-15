@@ -28,6 +28,8 @@
                 }"
                 :sort-desc.sync="sortDesc"
                 :sort-by.sync="sortBy"
+                show-expand
+                item-key="Id"
             >
                 <template v-slot:item.Status="{ item }">
                     <v-chip
@@ -49,6 +51,21 @@
                     >
                         mdi-close-circle
                     </v-icon>
+                </template>
+                <template v-slot:expanded-item="{ headers, item }">
+                    <td :colspan="headers.length" >
+                        <div v-if="item.Status != 'Cancelada'">
+                            <v-row>
+                                Comemoração: {{ item.EhComomoracao }}
+                            </v-row>
+                            <v-row v-if="item.Observacoes != ''">
+                                Observacoes: {{ item.Observacoes }}
+                            </v-row>
+                        </div>
+                        <div v-if="item.Status == 'Cancelada'">
+                            Motivo cancelamento: {{ item.DescricaoCancelamento }}
+                        </div>
+                    </td>
                 </template>
             </v-data-table>
             <load-component :Ativo="loader"/>
@@ -96,8 +113,38 @@ export default {
     }),
 
     methods: {
+        TempoParaCancelamento(item) {
+
+            let dtHora = this.parseDate(item.Data)+ ' ' +item.Horario
+
+            if(isNaN(Date.parse(dtHora)))
+                return false
+
+                debugger
+
+            let dataReserva = new Date(dtHora)
+
+            let dataLimiteCancel = new Date(dataReserva.getTime())
+            dataLimiteCancel.setMinutes(dataReserva.getMinutes() - item.TempoCancelamento)
+
+            let dataAgora = this.currentDate
+
+            if (dataAgora > dataLimiteCancel && dataAgora < dataReserva) {
+                this.EnableAlert("Tempo excedido para cancelamento. Tempo permitido " + item.TempoCancelamento + " minutos.", "warning")
+                window.scrollTo(0,0);
+                return true
+            }
+            else if (dataAgora > dataReserva) {
+                this.EnableAlert("Não é permitido cancelar reservas passadas.", "warning")
+                window.scrollTo(0,0);
+                return true
+            }
+
+            return false
+        },
+
         cancelarReserva(item) {
-            
+
             this.motivoCancelamento = null;
 
             if (item.Status == 'Cancelada') {
@@ -110,6 +157,9 @@ export default {
                 window.scrollTo(0,0);
                 return
             }
+
+            if (this.TempoParaCancelamento(item))
+                return
 
             this.acao = "Cancelar"
             this.itemEnvio = item
@@ -153,13 +203,20 @@ export default {
         requestReservas() {
             this.loader = !this.loader;
 
-            this.RequestGet('Reserva/'+this.dadosUsuario.Id,
+            debugger
+
+            let url = this.listaHistoricoEmpresa ?
+                    'Reserva/'+this.dadosUsuario.Id+'/'+this.dadosUsuario.EmpresaId :
+                    'Reserva/'+this.dadosUsuario.Id+'/'+0
+
+            this.RequestGet(url,
             (retorno) => this.RetornoReservas(retorno),
             (error) => this.RetornoErro(error),
             () => (this.loader = !this.loader))
         },
 
         RetornoReservas(retorno) {
+            
             this.historicos = []
             retorno.data.forEach(element => {
                 this.historicos.push({
@@ -169,12 +226,17 @@ export default {
                     Horario: element.horario == null ? element.periodoId + ' - ' + element.periodo.descricao : this.parseTimeDate(element.horario),
                     Pessoas: element.quantidadePessoas,
                     Status: element.cancelada ? 'Cancelada' : element.ativo ? "Concluida" : "Aguardando",
+                    EhComomoracao: element.ehComemoracao ? 'Sim' : 'Não',
+                    Observacoes: element.descricaoComemoracao,
+                    DescricaoCancelamento: element.motivoCancelamento,
+                    TempoCancelamento: element.empresa.empresaAdicional.tempoPermitidoCancelamento
                 })
                 
             });
         }
     },
     created() {
+        debugger
         this.requestReservas()
     },
 
@@ -182,13 +244,17 @@ export default {
 
         refresh (val) {
             this.requestReservas()
-        }
+        },
 
+        dadosUsuario(val) {
+            this.requestReservas()
+        }
     },
 
     props: {
         refresh: Boolean,
-        dadosUsuario: Object
+        dadosUsuario: Object,
+        listaHistoricoEmpresa: Boolean
     }
 }
 </script>

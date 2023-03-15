@@ -66,7 +66,7 @@
             
             <inicial-empresa-component :dadosUsuario="this.dadosUsuario"  v-if="inicialEmpresaComponent" :refresh="refresh"/>
             <editar-usuario-component v-if="editarUsuarioComponent" :dadosUsuario="this.dadosUsuario"/>
-            <listar-usuarios-component v-if="cadastroUsuarioComponent"/>
+            <listar-usuarios-component v-if="cadastroUsuarioComponent" :recebe-dados-usuario="this.dadosUsuario"/>
             <listar-funcionarios-component v-if="listarFuncionariosComponent" :dadosUsuario="this.dadosUsuario" />
         </v-main>
 
@@ -153,6 +153,11 @@ export default {
                     this.agendaComponent = false
                     this.historicoClienteComponent = true
                 }
+                else 
+                {
+                    this.agendaComponent = false
+                    this.inicialEmpresaComponent = true
+                }
             }, 600)
         },
 
@@ -202,11 +207,11 @@ export default {
             this.DesabilitarComponentes()
 
             this.editarUsuarioComponent = true
-
+            this.drawerPhone()
         },
 
         TelasIniciais() {
-            debugger
+            
             if (this.dadosUsuario.EmpresaId != '' && this.dadosUsuario.Adm == 'True') {
                 this.inicialEmpresaComponent = true
                 this.menus = this.menusEmpresa

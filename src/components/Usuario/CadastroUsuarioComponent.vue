@@ -11,23 +11,27 @@
                 :rules="required"
                 color="green"
                 required
-                prepend-icon="mdi-clock-time-four-outline"
+                prepend-icon="mdi-text-box-edit"
             />
             <v-text-field
                 v-model="localTelefone"
                 label="Telefone"
+                type="tel"
+                pattern="\d*"
                 required
                 color="green"
-                :rules="numberRule"
-                prepend-icon="mdi-clock-time-four-outline"
+                :rules="required"
+                prepend-icon="mdi-text-box-edit"
+                v-mask="maskTelefone"
             />
             <v-text-field
                 v-model="localUsuario"
                 label="Email"
+                type="email"
                 :rules="emailRules"
                 color="green"
                 required
-                prepend-icon="mdi-clock-time-four-outline"
+                prepend-icon="mdi-text-box-edit"
             />
             <v-text-field
                 v-model="localSenha"
@@ -39,7 +43,7 @@
                 counter
                 required
                 @click:append="show1 = !show1"
-                prepend-icon="mdi-clock-time-four-outline"
+                prepend-icon="mdi-text-box-edit"
             />
             <v-text-field
                 v-model="localFuncao"
@@ -47,25 +51,25 @@
                 :rules="required"
                 color="green"
                 required
-                prepend-icon="mdi-clock-time-four-outline"
+                prepend-icon="mdi-text-box-edit"
                 v-if="dadosUsuario != null && dadosUsuario.Adm"
             />
             <v-select
                 v-model="localAtivo"
                 :items="items"
                 label="Ativo"
-                prepend-icon="mdi-party-popper"
+                prepend-icon="mdi-list-box"
                 color="green"
-                :rule="required"
+                :rules="required"
                 v-if="dadosUsuario != null && dadosUsuario.Adm"
             />
             <v-select
                 v-model="localAdm"
                 :items="items"
                 label="Administrador"
-                prepend-icon="mdi-party-popper"
+                prepend-icon="mdi-list-box"
                 color="green"
-                :rule="required"
+                :rules="required"
                 v-if="dadosUsuario != null && dadosUsuario.Adm"
             />
         </v-form>
@@ -106,16 +110,10 @@ export default {
         localDadosUsuario: null,
         show1: false,
         items: ['Sim', 'Não'],
-        rules: [
-            v => !!v || 'Campo Obrigatório.'
-        ],
-        numberRule: [ 
-            v => /^\d+$/.test(v)||'Campo aceita apenas numeros.'
-        ],
     }), 
     methods: {
         retornoDialog(retorno) {
-            debugger
+            
             if (retorno.success) {
                 this.requisicaoEditar()
             }
@@ -147,9 +145,9 @@ export default {
             if (!this.$refs.form.validate()) 
                 return 
 
-                debugger
-
             this.loader = !this.loader;
+
+            debugger
 
             this.RequestPost('Usuario/InserirCliente',
             {
@@ -171,8 +169,6 @@ export default {
         },
 
         Editar() {
-
-            debugger
 
             if (!this.$refs.form.validate()) 
                 return
@@ -218,6 +214,7 @@ export default {
         },
 
         atribuirValores(val) {
+            
             debugger
             this.localNomeCompleto = val.Nome
             this.localUsuario = val.Login
@@ -231,7 +228,7 @@ export default {
     },
     watch: {
         salvar(newValue) {
-            debugger
+            
             if (this.acao == "Editar")
                 this.requisicaoEditar()
             else
@@ -244,6 +241,7 @@ export default {
             this.Editar()
         },
         localDadosUsuario(val) {
+            debugger
             if (val != null && this.acao == "Editar")
                 this.atribuirValores(val)
         },

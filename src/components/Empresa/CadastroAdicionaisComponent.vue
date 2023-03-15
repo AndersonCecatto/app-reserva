@@ -80,7 +80,7 @@ export default {
         localTempoPermitidoCancelamento: null,
         localMensagemRapida: null,
         items: ['Sim', 'Não'],
-        rules: [v => v != null && v.length <= 50 || 'Máximo 50 characters'],
+        rules: [v => v != null && v.length <= 50 || 'Máximo 50 caracteres'],
     }),
 
     methods: {
@@ -90,7 +90,7 @@ export default {
 
             this.RequestPut('EmpresaAdicional',
             {
-                Id: this.empresaAdicionalId,
+                Id: this.retornoEmpresaAdicional.EmpresaAdicionalId,
                 BloqueiaReserva: this.localBloquearReserva == "Sim" ? true : false,
                 AceitaReservaAutomaticamente: this.localAceitaReservaAutomaticamente == "Sim" ? true : false,
                 PermiteReagendarReserva: this.localPermiteReagendarReserva == "Sim" ? true : false,
@@ -104,22 +104,30 @@ export default {
         }
     },
     created() {
-        this.localBloquearReserva = this.bloquearReserva,
-        this.localAceitaReservaAutomaticamente = this.aceitaReservaAutomaticamente
-        this.localPermiteReagendarReserva = this.permiteReagendarReserva
-        this.localExibirMensagemRapida = this.exibirMensagemRapida
-        this.localTempoPermitidoCancelamento = this.tempoPermitidoCancelamento
-        this.localMensagemRapida = this.mensagemRapida
+        // this.localBloquearReserva = this.bloquearReserva,
+        // this.localAceitaReservaAutomaticamente = this.aceitaReservaAutomaticamente
+        // this.localPermiteReagendarReserva = this.permiteReagendarReserva
+        // this.localExibirMensagemRapida = this.exibirMensagemRapida
+        // this.localTempoPermitidoCancelamento = this.tempoPermitidoCancelamento
+        // this.localMensagemRapida = this.mensagemRapida
+
+        this.localBloquearReserva = this.retornoEmpresaAdicional.BloquearReserva
+        this.localAceitaReservaAutomaticamente = this.retornoEmpresaAdicional.AceitaReservaAutomaticamente
+        this.localPermiteReagendarReserva = this.retornoEmpresaAdicional.PermiteReagendarReserva
+        this.localExibirMensagemRapida = this.retornoEmpresaAdicional.ExibirMensagemRapida
+        this.localTempoPermitidoCancelamento = this.retornoEmpresaAdicional.TempoPermitidoCancelamento
+        this.localMensagemRapida = this.retornoEmpresaAdicional.MensagemRapida
     },
 
     props: {
-        empresaAdicionalId: Number,
-        bloquearReserva: String,
-        aceitaReservaAutomaticamente: String,
-        permiteReagendarReserva: String,
-        exibirMensagemRapida: String,
-        tempoPermitidoCancelamento: Number,
-        mensagemRapida: String
+        // empresaAdicionalId: Number,
+        // bloquearReserva: String,
+        // aceitaReservaAutomaticamente: String,
+        // permiteReagendarReserva: String,
+        // exibirMensagemRapida: String,
+        // tempoPermitidoCancelamento: Number,
+        // mensagemRapida: String,
+        retornoEmpresaAdicional: Object
     }
 }
 </script>

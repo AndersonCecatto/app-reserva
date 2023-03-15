@@ -56,7 +56,7 @@ export default {
         },
         
         retornoDialog(retorno) {
-            debugger
+            
             this.dialog = !this.dialog
 
             this.EnableAlert("Usuário Editado com sucesso.", "success")
@@ -82,7 +82,9 @@ export default {
         },
 
         RetornoUsuarioPorId(retorno) {
+            
             debugger
+
             this.dadosEdicaoUsuario = {
                 Id: retorno.data.id,
                 Nome: retorno.data.nome,
@@ -91,7 +93,11 @@ export default {
                 Login: retorno.data.login,
                 Senha: retorno.data.senha,
                 EmpresaId : retorno.data.empresaId,
-                FuncionarioId: retorno.data.funcionarioId
+                FuncionarioId: retorno.data.funcionarioId,
+                Funcao: retorno.data.funcionario?.funcao,
+                Ativo: retorno.data.ativo ? 'Sim' : 'Não',
+                AdministradorUsuario: retorno.data.funcionario?.administrador != null ? retorno.data.funcionario.administrador ? 'Sim' : 'Não' : null,
+                Adm: retorno.data.funcionario?.administrador ?? false
             }
         },
     },

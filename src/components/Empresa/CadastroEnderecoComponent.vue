@@ -1,48 +1,58 @@
 <template>
-    <v-form class="px-7 mt-3">
+    <v-form 
+        ref="form" 
+        lazy-validation
+        class="px-7 mt-3">
         <v-text-field
             v-model="localLogradouro"
             label="Logradouro"
             prepend-icon="mdi-text-box-edit"
             color="green"
+            :rules="required"
         />
         <v-text-field
             v-model="localBairro"
             label="Bairro"
             prepend-icon="mdi-text-box-edit"
             color="green"
+            :rules="required"
         />
         <v-text-field
             v-model="localNumero"
             label="Numero"
             prepend-icon="mdi-text-box-edit"
             color="green"
+            :rules="required"
         />
         <v-text-field
             v-model="localComplemento"
             label="Complemento"
             prepend-icon="mdi-text-box-edit"
             color="green"
+            :rules="required"
         />
         <v-text-field
             v-model="localCep"
             label="Cep"
             prepend-icon="mdi-text-box-edit"
             color="green"
+            v-mask="maskCep"
+            :rules="required"
         />
         
         <auto-complete-field-component 
             Label="Estado" 
             Icon="mdi-city" 
             Url="Estado"
-            :receberDados="estado"
+            :rules="required"
+            :receberDados="this.retornoEndereco?.Estado"
             @retorno="retornoEstado"/>
         <auto-complete-field-component 
-            v-model="cidade"
             Label="Cidade" 
             Icon="mdi-city" 
+            :rules="required"
             :Url="localEstdo == null ? 'Cidade' : 'Cidade/BuscarPorIdUf/'+localEstdo"
-            :receberDados="cidade" 
+            :receberDados="this.retornoEndereco?.Cidade" 
             @retorno="retornoCidade"/>
         <v-row class="px-3 py-7">
             <v-btn
@@ -92,11 +102,14 @@ export default {
         },
 
         Salvar(){
+            if (!this.$refs.form.validate()) 
+                return 
+
             this.loader = !this.loader;
 
             this.RequestPut('Endereco',
             {
-                Id: this.enderecoId,
+                Id: this.retornoEndereco.EnderecoId,
                 Logradouro: this.localLogradouro,
                 Bairro: this.localBairro,
                 Numero: this.localNumero,
@@ -110,25 +123,17 @@ export default {
         }
     },
     created() {
-        this.localLogradouro = this.logradouro
-        this.localBairro = this.bairro
-        this.localNumero = this.numero
-        this.localComplemento = this.complemento
-        this.localCep = this.cep
-        this.localCidade = this.cidade
-        this.localEstado = this.estado
-        this.localCidadeId = this.cidadeId
+        this.localLogradouro = this.retornoEndereco.Logradouro
+        this.localBairro = this.retornoEndereco.Bairro
+        this.localNumero = this.retornoEndereco.Numero
+        this.localComplemento = this.retornoEndereco.Complemento
+        this.localCep = this.retornoEndereco.Cep
+        this.localCidade = this.retornoEndereco.Cidade
+        this.localEstado = this.retornoEndereco.Estado
+        this.localCidadeId = this.retornoEndereco.CidadeId
     },
     props: {
-        enderecoId: Number,
-        logradouro: String,
-        bairro: String,
-        numero: String,
-        complemento: String,
-        cep: String,
-        estado: Object,
-        cidade: Object,
-        cidadeId: Number
+        retornoEndereco: Object
     }
 }
 </script>

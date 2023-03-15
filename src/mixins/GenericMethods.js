@@ -6,6 +6,10 @@ export default {
         loader: false,
         dialog: false,
         search: '',
+        maskTelefone: '(##) #####-####',
+        maskCnpj: '##.###.###/####-##',
+        maskCep: '##.###-###',
+        currentDate: new Date(new Date().toISOString()),
         required: [
             v => !!v || 'Campo Obrigatório'
         ],

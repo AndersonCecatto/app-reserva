@@ -16,7 +16,7 @@
             <auto-complete-field-component 
                 Label="Usuário" 
                 Icon="mdi-account-circle" 
-                Url="Usuario"
+                Url="Usuario/Clientes"
                 @retorno="retornoUsuario"
                 v-if="this.dadosUsuario.EmpresaId != ''"
                 />
@@ -58,14 +58,15 @@
                 color="green"
                 :rules="required"
             ></v-select>
-            <v-text-field
+            <v-textarea
                 v-model="descricao"
                 prepend-icon="mdi-message-arrow-right"
-                label="Descrição"
-                :disabled="DesabilitarCampoDscricao()"
+                label="Observações"
                 color="green"
+                :rules="rules"
+                counter
             >
-            </v-text-field>
+            </v-textarea>
             <v-row class="px-3 py-7">
                 <v-btn
                     outlined
@@ -98,15 +99,15 @@ export default {
     name: 'AgendarComponent',
     data: vm => ({
         loader: false,
-        date: vm.FormatDate(new Date().toISOString().substring(0, 10)),
+        date: new Date().toLocaleDateString(),
         modal2: false,
         time: null,
         modal: false,
         comemoracao: "Não",
-        descricao: null,
+        descricao: '',
         items: ['Sim', 'Não'],
         periodo: [],
-        QuantidadePessoas: null,
+        QuantidadePessoas: '',
         localPeriodo: null,
         usuarioId: null,
         requiredPeopleRules: [
@@ -114,7 +115,8 @@ export default {
         ],
         requiredRules: [
             v => v != null || 'Campo Obrigatório.',
-        ]
+        ],
+        rules: [v => v.length <= 50 || 'Máximo 50 caracteres'],
     }),
     mixins: [GenericMethods, RequestMethods],
     methods: {
@@ -124,21 +126,12 @@ export default {
         },
 
         retornoData(retorno) {
+            debugger
             this.date = retorno
         },
 
         retornoTime(retorno) {
             this.time = retorno
-        },
-
-        DesabilitarCampoDscricao() {
-            if(this.comemoracao != 'Sim')
-            {
-                this.descricao = null;
-                return true
-            }
-        
-            return false
         },
 
         requestSalvarReserva() {
@@ -155,13 +148,14 @@ export default {
                 usuarioId: this.usuarioId ?? this.dadosUsuario.Id,
                 ativo: false,
                 quantidadePessoas: this.QuantidadePessoas,
-                ehComemoracao: false,
-                descricaoComemoracao: '',
+                ehComemoracao: this.comemoracao == 'Sim',
+                descricaoComemoracao: this.descricao,
                 cancelada: false
             },
             () => 
                 {
                     this.EnableAlert("Concluido com sucesso.", "success")
+                    window.scrollTo(0,0);
                     this.$emit('reservado', true)
                 },
             (error) => this.RetornoErro(error),
@@ -174,13 +168,6 @@ export default {
                 return  
 
             this.requestCapacidadeReserva()
-
-            // if (this.dadosEmpresa.bloquearReserva) {
-            //     this.EnableAlert(this.dadosEmpresa.mensagemRapida, "warning")
-            //     window.scrollTo(0,0);
-            //     return
-            // }
-           
         },
 
         requestBuscarPeriodoPorEmpresaId() {
@@ -197,7 +184,7 @@ export default {
                     this.localPeriodo = this.periodo[0]
                 
             }, 
-            (error) => this.$emit('response', { success: false, response: error }),
+            (error) => this.RetornoErro(error),
             () => (this.loader = !this.loader))
         },
 
@@ -213,7 +200,6 @@ export default {
                 periodoId: this.localPeriodo != null ? this.localPeriodo.replace(/\D+/g, '') : null
             },
             (retorno) => {
-                debugger
                 if (retorno.data + parseInt(this.QuantidadePessoas) > this.dadosEmpresa.quantidadePessoas) {
                     this.EnableAlert("Capacidade maxima atingida para o dia "+this.date, "warning")
                     return
@@ -221,7 +207,7 @@ export default {
 
                 this.requestSalvarReserva()
             }, 
-            (error) => this.$emit('response', { success: false, response: error }),
+            (error) => this.RetornoErro(error),
             () => (this.loader = !this.loader))
         },
     },

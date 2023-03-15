@@ -1,5 +1,8 @@
 <template>
-    <v-form class="px-4 mt-3">
+    <v-form 
+        ref="form" 
+        lazy-validation
+        class="px-4 mt-3">
         <time-dialog-field-component 
             @retornoTime="retornoTimeInicial" 
             titulo="Horário Inicio Reservas"
@@ -17,6 +20,7 @@
             color="green"
             prepend-icon="mdi-list-box"
             multiple
+            :rules="required"
         ></v-select>
         <v-select
             v-model="localReservaPorPeriodo"
@@ -25,6 +29,7 @@
             prepend-icon="mdi-list-box"
             color="green"
             @change="change"
+            :rules="required"
         ></v-select>
         <v-select
             v-model="localReservaPorMesa"
@@ -133,11 +138,14 @@ export default {
         },
         Salvar(){
             
+            if (!this.$refs.form.validate()) 
+                return 
+
             this.loader = !this.loader;
 
             this.RequestPut('ConfiguracoesEmpresa',
             {
-                Id: this.configuracoesEmpresaId,
+                Id: this.retornoConfiguracoes.ConfiguracoesEmpresaId,
                 HorarioInicio: this.parseTime(this.FormatDate(new Date().toISOString().substring(0,10)), this.localTimeInicial), //new Date(new Date().toISOString().substring(0,10) + ' ' + this.localTimeInicial+':00.000Z').toISOString(),
                 HorarioFim: this.parseTime(this.FormatDate(new Date().toISOString().substring(0,10)), this.localTimeFinal),//new Date(new Date().toISOString().substring(0,10) + ' ' + this.localTimeFinal+':00.000Z').toISOString(),
                 EhPorMesas: this.localReservaPorMesa == "Sim",
@@ -228,14 +236,15 @@ export default {
         }
     },
     created() {
-        this.localTimeInicial = this.timeInicial
-        this.localTimeFinal = this.timeFinal
-        this.localReservaPorPeriodo = this.reservaPorPeriodo
-        this.localReservaPorMesa = this.reservaPorMesa
-        this.localQuantidadeMesas = this.quantidadeMesas
-        this.localReservaPorPessoas = this.reservaPorPessoas
-        this.localQuantidadePessoas = this.quantidadePessoas
-        this.selecionarDiasAtendimento(this.diasAtendimento)
+
+        this.localTimeInicial = this.retornoConfiguracoes.TimeInicial
+        this.localTimeFinal = this.retornoConfiguracoes.TimeFinal
+        this.localReservaPorPeriodo = this.retornoConfiguracoes.ReservaPorPeriodo
+        this.localReservaPorMesa = this.retornoConfiguracoes.ReservaPorMesa
+        this.localQuantidadeMesas = this.retornoConfiguracoes.QuantidadeMesas
+        this.localReservaPorPessoas = this.retornoConfiguracoes.ReservaPorPessoas
+        this.localQuantidadePessoas = this.retornoConfiguracoes.QuantidadePessoas
+        this.selecionarDiasAtendimento(this.retornoConfiguracoes.DiasAtendimento)
     },
 
     watch: {
@@ -253,15 +262,7 @@ export default {
     },
 
     props: {
-        configuracoesEmpresaId: Number,
-        timeInicial: String,
-        timeFinal: String,
-        reservaPorPeriodo: String,
-        reservaPorMesa: String,
-        quantidadeMesas: Number,
-        reservaPorPessoas: String,
-        quantidadePessoas: Number,
-        diasAtendimento: String
+        retornoConfiguracoes: Object
     }
 }
 </script>

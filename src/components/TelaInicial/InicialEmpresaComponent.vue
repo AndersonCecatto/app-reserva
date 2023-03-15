@@ -48,28 +48,24 @@
         </v-card-title>
         <v-row v-if="hideFilterDate == true">
             <v-col 
-                cols="12"
-                xs="3"
+                cols="6"
                 sm="3"
                 md="3"
                 class="ml-5"
             >
                 <data-dialog-field-component
                     @retornoData="aplicarFiltroDataInicial"
-                    xs="3"
                     titulo="Data Inicial"
                 />
             </v-col>
             <v-col 
-                cols="12"
-                xs="3"
+                cols="6"
                 sm="3"
                 md="3"
                 class="ml-5"
             >
                 <data-dialog-field-component
                     @retornoData="aplicarFiltroDataFinal"
-                    xs="3"
                     titulo="Data Final"
                 />
             </v-col>
@@ -134,8 +130,18 @@
                 </v-icon>
             </template>
             <template v-slot:expanded-item="{ headers, item }">
-                <td id="Teste" :colspan="headers.length" v-if="item.Status == 'Cancelada'" >
-                    Motivo Cancelamento: {{ item.DescricaoCancelamento }}
+                <td :colspan="headers.length" >
+                    <div v-if="item.Status != 'Cancelada'">
+                        <v-row>
+                            Comemoração: {{ item.EhComomoracao }}
+                        </v-row>
+                        <v-row v-if="item.Observacoes != ''">
+                            Observacoes: {{ item.Observacoes }}
+                        </v-row>
+                    </div>
+                    <div v-if="item.Status == 'Cancelada'">
+                        Motivo cancelamento: {{ item.DescricaoCancelamento }}
+                    </div>
                 </td>
             </template>
         </v-data-table>
@@ -271,6 +277,8 @@ export default {
                             Horario: element.horario == null ? element.periodoId + ' - ' + element.periodo.descricao : this.parseTimeDate(element.horario),
                             Pessoas: element.quantidadePessoas,
                             Status:  element.cancelada ? 'Cancelada' : element.ativo ? "Concluida" : "Aguardando",
+                            EhComomoracao: element.ehComemoracao ? 'Sim' : 'Não',
+                            Observacoes: element.descricaoComemoracao,
                             DescricaoCancelamento: element.motivoCancelamento
                     })
                 });
@@ -295,31 +303,49 @@ export default {
         },
 
         deletarFiltroData() {
+
+            this.loader = !this.loader;
+
             this.datainicial = this.FormatDate(new Date().toISOString().substring(0, 10)),
             this.dataFinal = this.FormatDate(new Date().toISOString().substring(0, 10)),
             this.ReservasView = []
             this.ReservasView = this.Reservas
+
+            setTimeout(() => {
+                this.loader = !this.loader;
+            }, 500)
         },
 
         aplicarFiltroData() {
             
+            
             let dtInicial = new Date(this.parseDate(this.dataInicial))
             let dtFinal = new Date(this.parseDate(this.dataFinal))
+            
+            dtInicial.setDate(dtInicial.getDate() + 1)
+            dtFinal.setDate(dtFinal.getDate() + 1)
             
             if (dtInicial > dtFinal) {
                 this.EnableAlert("Data Inicial não pode ser maior que a Data Final.", "warning")
                 return 
             } 
+            
+            this.loader = !this.loader;
 
             this.ReservasView = []
             this.Reservas.filter((element) => {
 
                 let dt = new Date(this.parseDate(element.Data))
+                dt.setDate(dt.getDate() + 1)
 
                 if ((dt >= dtInicial || dt == dtInicial) && 
                     (dt <= dtFinal || dt == dtFinal))
                     this.ReservasView.push(element)
             })
+
+            setTimeout(() => {
+                this.loader = !this.loader;
+            }, 500)
         }
     },
     

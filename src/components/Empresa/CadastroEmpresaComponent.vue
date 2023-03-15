@@ -1,26 +1,35 @@
 <template>
-    <v-form class="px-4 mt-3">
+    <v-form 
+        ref="form" 
+        lazy-validation
+        class="px-4 mt-3">
         <v-text-field
             v-model="localRazaoSocial"
+            :rules="required"
             label="Razão Social"
             prepend-icon="mdi-text-box-edit"
             color="green"
         />
         <v-text-field
             v-model="localCpfCnpj"
+            :rules="required"
             label="Cnpj"
             prepend-icon="mdi-text-box-edit"
             color="green"
+            v-mask="maskCnpj"
         />
         <v-text-field
             v-model="localTelefone"
+            :rules="required"
             label="Telefone"
             type="phone"
             prepend-icon="mdi-text-box-edit"
             color="green"
+            v-mask="maskTelefone"
         />
         <v-text-field
             v-model="localEmail"
+            :rules="required"
             label="Email"
             prepend-icon="mdi-text-box-edit"
             color="green"
@@ -70,19 +79,21 @@ export default {
     mixins: [GenericMethods, RequestMethods],
 
     data: () => ({
-        localRazaoSocial: '',
-        localCpfCnpj: '',
-        localTelefone: '',
-        localEmail: '',
-        localEnderecoId: '',
-        localConfiguracoesmpresaId: '',
-        localDataCadastro: '',
+        localRazaoSocial: null,
+        localCpfCnpj: null,
+        localTelefone: null,
+        localEmail: null,
+        localDataCadastro: null,
         localImagem: null,
-        imageName: null,
+        imagemName: null,
         imageUrl: null,
     }),
     methods: {
         SalvarEmpresa() {
+
+            if (!this.$refs.form.validate()) 
+                return
+
             this.loader = !this.loader;
 
             this.RequestPut('Empresa',
@@ -92,12 +103,12 @@ export default {
                 CpfCnpj: this.localCpfCnpj,
                 Telefone: this.localTelefone,
                 Email: this.localEmail,
-                EnderecoId: this.localEnderecoId,
-                ConfiguracoesEmpresaId: this.localConfiguracoesmpresaId,
-                EmpresaAdicionalId: this.empresaAdicionalId,
+                EnderecoId: this.retornoEmpresa.EnderecoId,
+                ConfiguracoesEmpresaId: this.retornoEmpresa.ConfiguracoesEmpresaId,
+                EmpresaAdicionalId: this.retornoEmpresa.EmpresaAdicionalId,
                 DataCadastro: this.parseDate(this.localDataCadastro),
                 Imagem: this.imageUrl != null ? window.btoa(this.imageUrl) : null,
-                ImagemName: this.imageName
+                ImagemName: this.imagemName
             },
             (retorno) => {this.$emit('response', { success: true, response: retorno })}, 
             (error) => this.$emit('response', { success: false, response: error }),
@@ -106,66 +117,67 @@ export default {
 
         onFilePicked(e) {
             
-            debugger
-
-            if (e != null) {
-
-                this.imageName = e.name
-                if(this.imageName.lastIndexOf('.') <= 0) {
-                    return
-                }
-                const fr = new FileReader ()
-                fr.readAsDataURL(e)
-                fr.addEventListener('load', () => {
-                    this.imageUrl = fr.result
-                })
+            if (e == null) {
+                this.imageUrl = null
+                this.imagemName = null
+                return
             }
 
-            this.imageUrl = null
-            this.ImageName = null
-        }
+            this.imagemName = e.name
+            if(this.imagemName.lastIndexOf('.') <= 0) {
+                return
+            }
+            const fr = new FileReader ()
+            fr.readAsDataURL(e)
+            fr.addEventListener('load', () => {
+                this.imageUrl = fr.result
+            })
+        },
     },
     watch: {
-        razaoSocial(val) {
-            this.localRazaoSocial = val
-        },
-        cnpj(val) {
-            this.localCpfCnpj = val
-        },
-        telefone(val) {
-            this.localTelefone = val
-        },
-        email(val) {
-            this.localEmail = val
-        },
-        enderecoId(val) {
-            this.localEnderecoId = val
-        },
-        configuracoesEmpresaId(val) {
-            this.localConfiguracoesmpresaId = val
-        },
-        dataCadastro(val) {
-            this.localDataCadastro = this.FormatDate(new Date(val).toISOString().substring(0,10))
-        },
-        imagemName(val) {
-            this.localImagem = new File([val], val, {
-                  type: "text/plain",
+        retornoEmpresa(val) {
+            
+            this.localDataCadastro = this.FormatDate(new Date(val.DataCadastroEmpresa).toISOString().substring(0,10))
+            this.localRazaoSocial = val.RazaoSocial
+            this.localCpfCnpj = val.Cnpj
+            this.localTelefone = val.Telefone
+            this.localEmail = val.Email
+
+            if (val.ImagemName == null)
+                return
+
+            this.localImagem = new File([''], val.ImagemName, {
+                type: "text/plain",
             })
 
-            this.imageName = val
+            this.imagemName = val.ImagemName
         }
     },
+
+    // created() {
+    //     debugger
+    //     if (this.RetornoDadosEmpresa.NameImagem == null)
+    //         return
+
+    //     this.localImagem = new File([this.RetornoDadosEmpresa.NameImagem], this.RetornoDadosEmpresa.NameImagem, {
+    //         type: "text/plain",
+    //     })
+
+    //     this.imagemName = this.RetornoDadosEmpresa.NameImagem
+    // },
+
     props: {
         razaoSocial: String,
         cnpj: String,
         telefone: String,
         email: String,
-        enderecoId: Number,
-        configuracoesEmpresaId: Number,
+        //enderecoId: Number,
+        //configuracoesEmpresaId: Number,
         dataCadastro: String,
-        empresaAdicionalId: Number,
-        imagemName: String,
-        dadosUsuario: Object
+        //empresaAdicionalId: Number,
+        NameImagem: String,
+        dadosUsuario: Object,
+        retornoEmpresa: Object
     }
 }
 </script>

@@ -26,7 +26,7 @@
                                     ref="form" 
                                     lazy-validation
                                 >
-                                    <v-row  class="px-6">
+                                    <v-row class="px-6">
                                         <v-text-field
                                         v-model="usuario"
                                         label="Email"
@@ -76,6 +76,11 @@
                                        >
                                         Cadastrar-se
                                     </a>
+                                </v-row>
+                                <v-row>
+                                    <v-col >
+                                        <!-- lugar que vai os botoes para login Google, Apple -->
+                                    </v-col>
                                 </v-row>
                             </v-container>
                         </v-card-text>
@@ -153,8 +158,6 @@ export default {
             if (!this.$refs.form.validate()) 
                 return 
             
-            debugger
-
             this.loader = !this.loader;
 
             this.RequestPost('Token', 

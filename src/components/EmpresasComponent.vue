@@ -16,6 +16,7 @@
             <v-card class="ma-3"
                 v-for="empresa in empresasView" 
                 :key="empresa.id"
+                :disabled="empresa.bloquearReserva"
                 @click="Acessar(empresa)">
                 <v-card-text 
                     class="color-font"
@@ -104,6 +105,7 @@ export default {
         },
 
         preencherDadosEmpresa(element) {
+            
             this.empresas.push({
                     id: element.id,
                     nome: element.nome,
@@ -159,6 +161,6 @@ export default {
     }
 
     #mensagem {
-        color: red;
+        color: green;
     }
 </style>

@@ -8,16 +8,7 @@
                 <v-tab>Informações Empresa</v-tab>
                 <v-tab-item>
                     <cadastro-empresa-component
-                        :razao-social="RazaoSocial"
-                        :cnpj="Cnpj"
-                        :telefone="Telefone"
-                        :email="Email"
-                        :configuracoes-empresa-id="ConfiguracoesEmpresaId"
-                        :endereco-id="EnderecoId"
-                        :data-cadastro="DataCadastroEmpresa"
-                        :empresa-adicional-id="empresaAdicionalId"
-                        :imagem-name="ImagemName"
-                        :imagem="Imagem"
+                        :retorno-empresa="RetornoDadosEmpresa"
                         :dados-usuario="dadosUsuario"
                         @response="Alerta"
                     />
@@ -25,30 +16,16 @@
                 <v-tab>Endereco</v-tab>
                 <v-tab-item>
                     <cadastro-endereco-component
-                        :endereco-id="EnderecoId"
-                        :logradouro="Logradouro"
-                        :bairro="Bairro"
-                        :numero="Numero"
-                        :complemento="Complemento"
-                        :cep="Cep"
-                        :estado="Estado"
-                        :cidade="Cidade"
-                        :cidade-id="CidadeId"
+                        
+                        :retorno-endereco="RetornoDadosEndereco"
                         @response="Alerta"
                     />
                 </v-tab-item>
                 <v-tab>Configuracoes Empresa</v-tab>
                 <v-tab-item>
                     <cadastro-configuracoes-empresa-component
-                        :configuracoes-empresa-id="ConfiguracoesEmpresaId"
-                        :time-inicial="timeInicial"
-                        :time-final="timeFinal"
-                        :reserva-por-periodo="ReservaPorPeriodo"
-                        :reserva-por-mesa="ReservaPorMesa"
-                        :quantidade-mesas="QuantidadeMesas"
-                        :reserva-por-pessoas="ReservaPorPessoas"
-                        :quantidade-pessoas="QuantidadePessoas"
-                        :dias-atendimento="DiasAtendimento"
+                        
+                        :retorno-configuracoes="RetornoDadosConfiguracoesEmpresa"
                         @reservaPorPeriodo="reservaPorPeriodo"
                         @response="Alerta"
                     />
@@ -56,21 +33,16 @@
                 <v-tab>Adicionais</v-tab>
                 <v-tab-item>
                     <cadastro-adicionais-component
-                        :empresa-adicional-id="empresaAdicionalId"
-                        :exibir-mensagem-rapida="exibirMensagemRapida"
-                        :bloquear-reserva="bloquearReserva"
-                        :aceita-reserva-automaticamente="aceitaReservaAutomaticamente"
-                        :permite-reagendar-reserva="permiteReagendarReserva"
-                        :tempo-permitido-cancelamento="tempoPermitidoCancelamento"
-                        :mensagem-rapida="mensagemRapida"
+                        
+                        :retorno-empresa-adicional="RetornoDadosEmpresaAdicional"
                         @response="Alerta"
                     />
                 </v-tab-item>
-                <v-tab v-if="ReservaPorPeriodo == 'Sim'" >Periodo</v-tab>
+                <v-tab v-if="RetornoDadosConfiguracoesEmpresa?.ReservaPorPeriodo == 'Sim'" >Periodo</v-tab>
                 <!-- <v-tab-item v-if="ReservaPorPeriodo != 'Não'"> -->
                 <v-tab-item>
                     <cadastro-periodo-component 
-                        v-if="ReservaPorPeriodo == 'Sim'" 
+                        v-if="RetornoDadosConfiguracoesEmpresa?.ReservaPorPeriodo == 'Sim'" 
                         :dados-usuario="dadosUsuario"
                         @response="Alerta"/>
                 </v-tab-item>
@@ -115,9 +87,14 @@ export default {
         DataCadastroEmpresa: null,
         Imagem: null,
         ImagemName: null,
+        RetornoDadosEmpresa: null,
 
         modal1: false,
         modal2: false,
+        RetornoDadosEndereco: null,
+        RetornoDadosConfiguracoesEmpresa: null,
+        RetornoDadosEmpresaAdicional: null,
+
         ConfiguracoesEmpresaId: null,
         timeInicial: null,
         timeFinal: null,
@@ -181,43 +158,52 @@ export default {
 
         RetornoEmpresa(response) {
             
-            debugger 
+            this.RetornoDadosEmpresa = {
+                RazaoSocial: response.data.nome,
+                Cnpj: response.data.cpfCnpj,
+                Telefone: response.data.telefone,
+                Email: response.data.email,
+                DataCadastroEmpresa: response.data.dataCadastro,
+                //Imagem: response.data.imagem,
+                ImagemName: response.data.imagemName,
+                ConfiguracoesEmpresaId: response.data.configuracoesEmpresa.id,
+                EmpresaAdicionalId: response.data.empresaAdicional.id,
+                EnderecoId: response.data.endereco.id
+            }
 
-            this.RazaoSocial = response.data.nome
-            this.Cnpj = response.data.cpfCnpj
-            this.Telefone = response.data.telefone
-            this.Email = response.data.email
-            this.DataCadastroEmpresa = response.data.dataCadastro
-            this.Imagem = response.data.imagem
-            this.ImagemName = response.data.imagemName
+            this.RetornoDadosEndereco = {
+                Logradouro: response.data.endereco.logradouro,
+                EnderecoId: response.data.endereco.id,
+                Bairro: response.data.endereco.bairro,
+                Cep: response.data.endereco.cep,
+                Complemento: response.data.endereco.complemento,
+                Numero: response.data.endereco.numero,
+                Cidade: response.data.endereco.cidade,
+                Estado: response.data.endereco.cidade.estado,
+                CidadeId: response.data.endereco.cidade.id
+            }
 
-            this.EnderecoId = response.data.endereco.id
-            this.Logradouro = response.data.endereco.logradouro
-            this.Bairro = response.data.endereco.bairro
-            this.Cep = response.data.endereco.cep
-            this.Complemento = response.data.endereco.complemento
-            this.Numero = response.data.endereco.numero
-            this.Cidade = response.data.endereco.cidade
-            this.Estado = response.data.endereco.cidade.estado
-            this.CidadeId = response.data.endereco.cidade.id
-
-            this.ConfiguracoesEmpresaId = response.data.configuracoesEmpresa.id
-            this.timeInicial = this.parseTimeDate(response.data.configuracoesEmpresa.horarioInicio),
-            this.timeFinal = this.parseTimeDate(response.data.configuracoesEmpresa.horarioFim),
-            this.ReservaPorPeriodo = response.data.configuracoesEmpresa.ehPorPeriodo ? "Sim" : "Não"
-            this.ReservaPorPessoas = response.data.configuracoesEmpresa.ehPorPessoas ? "Sim" : "Não"
-            this.QuantidadePessoas = response.data.configuracoesEmpresa.quantidadePessoas
-            this.ReservaPorMesa = response.data.configuracoesEmpresa.ehPorMesas ? "Sim" : "Não"
-            this.QuantidadeMesas = response.data.configuracoesEmpresa.quantidadeMesas
-            this.DiasAtendimento = response.data.configuracoesEmpresa.diasAtendimento
+            this.RetornoDadosConfiguracoesEmpresa = {
+                ConfiguracoesEmpresaId: response.data.configuracoesEmpresa.id,
+                TimeInicial: this.parseTimeDate(response.data.configuracoesEmpresa.horarioInicio),
+                TimeFinal: this.parseTimeDate(response.data.configuracoesEmpresa.horarioFim),
+                ReservaPorPeriodo: response.data.configuracoesEmpresa.ehPorPeriodo ? "Sim" : "Não",
+                ReservaPorPessoas: response.data.configuracoesEmpresa.ehPorPessoas ? "Sim" : "Não",
+                QuantidadePessoas: response.data.configuracoesEmpresa.quantidadePessoas,
+                ReservaPorMesa: response.data.configuracoesEmpresa.ehPorMesas ? "Sim" : "Não",
+                QuantidadeMesas: response.data.configuracoesEmpresa.quantidadeMesas,
+                DiasAtendimento: response.data.configuracoesEmpresa.diasAtendimento
+            }
             
-            this.empresaAdicionalId = response.data.empresaAdicional.id
-            this.bloquearReserva = response.data.empresaAdicional.bloqueiaReserva ? "Sim" : "Não"
-            this.aceitaReservaAutomaticamente = response.data.empresaAdicional.aceitaReservaAutomaticamente ? "Sim" : "Não"
-            this.permiteReagendarReserva = response.data.empresaAdicional.permiteReagendarReserva ? "Sim" : "Não"
-            this.exibirMensagemRapida = response.data.empresaAdicional.exibirMensagemRapida ? "Sim" : "Não"
-            this.tempoPermitidoCancelamento = response.data.empresaAdicional.tempoPermitidoCancelamento
-            this.mensagemRapida = response.data.empresaAdicional.mensagemRapida ?? ''
+            this.RetornoDadosEmpresaAdicional = {
+                EmpresaAdicionalId: response.data.empresaAdicional.id,
+                BloquearReserva: response.data.empresaAdicional.bloqueiaReserva ? "Sim" : "Não",
+                AceitaReservaAutomaticamente: response.data.empresaAdicional.aceitaReservaAutomaticamente ? "Sim" : "Não",
+                PermiteReagendarReserva: response.data.empresaAdicional.permiteReagendarReserva ? "Sim" : "Não",
+                ExibirMensagemRapida: response.data.empresaAdicional.exibirMensagemRapida ? "Sim" : "Não",
+                TempoPermitidoCancelamento: response.data.empresaAdicional.tempoPermitidoCancelamento,
+                MensagemRapida: response.data.empresaAdicional.mensagemRapida ?? ''
+            }
         },
     },
     

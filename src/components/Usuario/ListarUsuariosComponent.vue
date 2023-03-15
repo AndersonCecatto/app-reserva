@@ -3,7 +3,7 @@
         <alert-component :texto-alerta="textoAlerta" :tipo='tipoAlerta' v-if="alerta == true"/>
         <card-padrao-component>
             <template v-slot:titulo>
-                Usuarios
+                <div class="mr-3">Usuarios</div>
                 <v-spacer></v-spacer>
                 <v-text-field
                     v-model="search"
@@ -44,6 +44,16 @@
                     </template>
                     <template v-slot:item.Login="{ item }">
                         <td class="font-weight-black">{{ item.Login }}</td>
+                    </template>
+                    <template v-slot:item.actions="{ item }">
+                        <v-icon
+                            color="primary"
+                            class="mr-3"
+                            large
+                            @click="Historico(item)"
+                        >
+                            mdi-history
+                        </v-icon>
                     </template>
                 </v-data-table>
             </template>
@@ -87,6 +97,29 @@
                 </v-btn>
             </template>
         </dialog-persistent-without-btn-component>
+
+        <dialog-persistent-without-btn-component
+            :dialogNew="dialogHistorico"
+            tamanho="800"
+        >
+            <template v-slot:text>
+                <historico-cliente-component :dados-usuario="dadosUsuario" :lista-historico-empresa="true"/>
+            </template>
+            <template v-slot:actions>
+                <v-spacer/>
+                <v-btn
+                    outlined
+                    large
+                    color="success"
+                    @click="VoltarHistorico()"
+                    >
+                    <v-icon left>
+                        mdi-arrow-u-left-top-bold
+                    </v-icon>
+                    Voltar
+                </v-btn>
+            </template>
+        </dialog-persistent-without-btn-component>
         <load-component :Ativo="loader"/>
     </div>
 </template>
@@ -99,9 +132,10 @@ import DialogPersistentWithoutBtnComponent from '../Field/DialogPersistentWithou
 import CadastroUsuarioComponent from './CadastroUsuarioComponent.vue'
 import AlertComponent from '../AlertComponent.vue'
 import LoadComponent from '../LoadComponent.vue'
+import HistoricoClienteComponent from '../HistoricoClienteComponent.vue'
 
 export default {
-    components: { CardPadraoComponent, DialogPersistentWithoutBtnComponent, CadastroUsuarioComponent, AlertComponent, LoadComponent },
+    components: { CardPadraoComponent, DialogPersistentWithoutBtnComponent, CadastroUsuarioComponent, AlertComponent, LoadComponent, HistoricoClienteComponent },
     mixins: [GenericMethods, RequestMethods],
     name: 'ListaUsuariosComponent',
 
@@ -113,6 +147,7 @@ export default {
             { text: 'Data Cadastro', value: 'DataCadastro' },
             { text: 'Login', value: 'Login' },
             { text: 'Ativo', value: 'Ativo' },
+            { text: 'Ações', value: 'actions', sortable: false },
         ],
         clientes: [],
         search: '',
@@ -120,9 +155,26 @@ export default {
         cancelarUsuario: false,
         sortBy: 'Id',
         sortDesc: true,
+        dialogHistorico: false,
+        dadosUsuario: null,
     }),
 
     methods: {
+
+        Historico(item) {
+
+            debugger
+            this.dadosUsuario = {
+                Id: item.Id,
+                EmpresaId: this.recebeDadosUsuario?.EmpresaId
+            }
+
+            this.dialogHistorico = !this.dialogHistorico
+        },
+
+        VoltarHistorico() {
+            this.dialogHistorico = !this.dialogHistorico
+        },
         
         requestUsuarios() {
 
@@ -168,6 +220,10 @@ export default {
 
     created() {
         this.requestUsuarios()
+    },
+
+    props: {
+        recebeDadosUsuario: Object
     }
 }
 </script>
