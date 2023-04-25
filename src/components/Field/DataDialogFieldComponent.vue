@@ -91,7 +91,6 @@ export default {
             this.dateFormatted = this.FormatDate(this.date)
         },
         dateFormatted(val) {
-            debugger
             this.$emit('retornoData', this.dateFormatted)
         }
     },

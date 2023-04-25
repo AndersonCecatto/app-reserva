@@ -44,6 +44,15 @@
                 </template>
                 <template v-slot:item.actions="{ item }">
                     <v-icon
+                        :color="item.Avaliacao ? `primary` : `yellow darken-3`"
+                        class="mr-3"
+                        large
+                        @click="avaliarAtendimento(item)"
+                        :disabled="item.Status != 'Concluida'"
+                    >
+                        mdi-star-check
+                    </v-icon>
+                    <v-icon
                         color="error"
                         class="mr-3"
                         large
@@ -53,14 +62,15 @@
                     </v-icon>
                 </template>
                 <template v-slot:expanded-item="{ headers, item }">
-                    <td :colspan="headers.length" >
+                    <td :colspan="headers.length" class="complementar">
                         <div v-if="item.Status != 'Cancelada'">
                             <v-row>
                                 Comemoração: {{ item.EhComomoracao }}
                             </v-row>
-                            <v-row v-if="item.Observacoes != ''">
-                                Observacoes: {{ item.Observacoes }}
+                            <v-row v-if="item.Servico != null">
+                                Serviço: {{ item.Servico }}
                             </v-row>
+                            <v-row v-if="item.Observacoes != ''" v-html="item.Observacoes"/>
                         </div>
                         <div v-if="item.Status == 'Cancelada'">
                             Motivo cancelamento: {{ item.DescricaoCancelamento }}
@@ -69,13 +79,78 @@
                 </template>
             </v-data-table>
             <load-component :Ativo="loader"/>
-            <dialog-persistent-component :item="itemEnvio" titulo="Cancelar Reserva" :dialog="dialog" tamanho="400" @response="retornoDialog" :acao="acao">
+            <dialog-persistent-component 
+                :item="itemEnvio" 
+                titulo="Cancelar Reserva" 
+                :dialog="dialog" 
+                tamanho="400" 
+                @response="retornoDialog" 
+                :acao="acao"
+            >
             <v-text-field
                 v-model="motivoCancelamento"
                 label="Motivo do Cancelamento"
                 prepend-icon="mdi-text-box-edit"
+                color="green"
             />
         </dialog-persistent-component>
+        <dialog-persistent-component
+            titulo="Avalie nosso atendimento"
+            :dialog="dialogAvaliacao"
+            tamanho="400"
+            @response="retornoDialogAvaliacao"
+            :item="itemEnvioAvaliacao" 
+        >
+            <div class="text-center my-5">
+                <v-rating
+                    v-model="nota"
+                    color="yellow darken-3"
+                    background-color="grey darken-1"
+                    empty-icon="$ratingFull"
+                    half-increments
+                    hover
+                    large
+                    prepend-icon="mdi-arrow-right-bold"
+                ></v-rating>
+            </div>
+            <v-textarea
+                v-model="descricaoAvaliacao"
+                prepend-icon="mdi-message-arrow-right"
+                label="Observações"
+                color="green"
+                counter
+            />
+        </dialog-persistent-component>
+        <dialog-persistent-without-btn-component
+            titulo="Avaliação"
+            :dialog-new="dialogAvaliacaoView"
+            @fechar="close"
+            tamanho="400"
+        >
+            <template v-slot:text>
+                <div class="text-center my-5">
+                    <v-rating
+                        v-model="nota"
+                        color="yellow darken-3"
+                        background-color="grey darken-1"
+                        empty-icon="$ratingFull"
+                        half-increments
+                        hover
+                        large
+                        prepend-icon="mdi-arrow-right-bold"
+                        readonly
+                    ></v-rating>
+                </div>
+                <v-textarea
+                    v-model="descricaoAvaliacao"
+                    prepend-icon="mdi-message-arrow-right"
+                    label="Observações"
+                    color="green"
+                    counter
+                    disabled
+                />
+            </template>
+        </dialog-persistent-without-btn-component>
         </v-card-text>
     </v-card>
 </template>
@@ -86,14 +161,16 @@ import AlertComponent from './AlertComponent.vue';
 import GenericMethods from '@/mixins/GenericMethods';
 import RequestMethods from '@/mixins/RequestMethods';
 import DialogPersistentComponent from './Field/DialogPersistentComponent.vue';
+import DialogPersistentWithoutBtnComponent from './Field/DialogPersistentWithoutBtnComponent.vue';
 
 export default {
-    components: { AlertComponent, LoadComponent, DialogPersistentComponent },
+    components: { AlertComponent, LoadComponent, DialogPersistentComponent, DialogPersistentWithoutBtnComponent },
 
     name: "HistoricoComponent",
     mixins: [GenericMethods, RequestMethods],
     data: () => ({
         itemEnvio: null,
+        itemEnvioAvaliacao: null,
         acao: null,
         sortBy: 'Id',
         sortDesc: true,
@@ -102,14 +179,18 @@ export default {
             { text: 'Codigo', align: 'start', value: 'Id',},
             { text: 'Restaurante', align: 'start', value: 'Empresa', },
             { text: 'Data', value: 'Data', },
-            { text: 'Horário/Periodo', value: 'Horario', },
-            { text: 'Quantidade Pessoas', value: 'Pessoas', },
-            { text: 'Status', value: 'Status', },
-            { text: 'Ações', value: 'actions', sortable: false}, 
+            { text: 'Horário/Periodo', value: 'Horario', align: 'center' },
+            { text: 'Quantidade Pessoas', value: 'Pessoas', align: 'center' },
+            { text: 'Status', value: 'Status', align: 'center' },
+            { text: 'Ações', value: 'actions', align: 'center', sortable: false}, 
             { text: '',  value: 'data-table-expand' },
         ],
         historicos: [],
         motivoCancelamento: null,
+        dialogAvaliacao: false,
+        dialogAvaliacaoView: false,
+        descricaoAvaliacao: null,
+        nota: 0
     }),
 
     methods: {
@@ -120,8 +201,6 @@ export default {
             if(isNaN(Date.parse(dtHora)))
                 return false
 
-                debugger
-
             let dataReserva = new Date(dtHora)
 
             let dataLimiteCancel = new Date(dataReserva.getTime())
@@ -131,12 +210,6 @@ export default {
 
             if (dataAgora > dataLimiteCancel && dataAgora < dataReserva) {
                 this.EnableAlert("Tempo excedido para cancelamento. Tempo permitido " + item.TempoCancelamento + " minutos.", "warning")
-                window.scrollTo(0,0);
-                return true
-            }
-            else if (dataAgora > dataReserva) {
-                this.EnableAlert("Não é permitido cancelar reservas passadas.", "warning")
-                window.scrollTo(0,0);
                 return true
             }
 
@@ -149,12 +222,14 @@ export default {
 
             if (item.Status == 'Cancelada') {
                 this.EnableAlert("Reserva já cancelada.", "warning")
-                window.scrollTo(0,0);
                 return
             } 
             else if (item.Status == 'Concluida') { 
                 this.EnableAlert("Reserva não pode ser cancelada.", "warning")
-                window.scrollTo(0,0);
+                return
+            }
+            else if (item.Status == 'Pendente') { 
+                this.EnableAlert("Não é permitido cancelar reservas passadas.", "warning")
                 return
             }
 
@@ -166,12 +241,75 @@ export default {
             this.dialog = !this.dialog
         },
 
+        close(retorno) {
+            this.dialogAvaliacaoView = !this.dialogAvaliacaoView
+        },
+
+        avaliarAtendimento(item) {
+    
+            if (item.Avaliacao){
+                this.requestBuscarAvaliacao(item)
+                this.dialogAvaliacaoView = !this.dialogAvaliacaoView
+            }
+            else {
+                this.itemEnvioAvaliacao = item
+                this.descricaoAvaliacao = null
+                this.nota = 0
+    
+                this.dialogAvaliacao = !this.dialogAvaliacao
+            }
+
+        },
+
         retornoDialog(retorno) {
 
             if (retorno.acao == "Cancelar" && retorno.success) 
                 this.requestAlterarStatus(retorno.response.Id, true, this.motivoCancelamento, true)
 
             this.dialog = !this.dialog
+        },
+
+        retornoDialogAvaliacao(retorno) {
+
+            if (retorno.success)
+                this.requestAvaliar(this.itemEnvioAvaliacao)
+
+            this.dialogAvaliacao = !this.dialogAvaliacao
+        },
+
+        requestAvaliar(item) {
+            debugger
+            this.loader = !this.loader;
+
+            this.RequestPost('Reserva/Avaliacao',
+            {
+                ReservaId: item.Id,
+                Nota: this.nota,
+                Descricao: this.descricaoAvaliacao,
+                UsuarioId: this.dadosUsuario.Id,
+                EmpresaId: item.EmpresaId
+            },
+            (response) => this.EnableAlert("Avaliado com sucesso.", "success"),
+            (error) => this.RetornoErro(error),
+            () => { 
+                this.loader = !this.loader 
+                
+                this.requestReservas()
+            })
+        },
+
+        requestBuscarAvaliacao(item) {
+            
+            this.loader = !this.loader;
+
+            this.RequestGet('Reserva/BuscarAvaliacao/'+item.Id,
+            (response) => {
+                debugger
+                this.nota = response.data.nota
+                this.descricaoAvaliacao = response.data.descricao
+            },
+            (error) => this.RetornoErro(error),
+            () => this.loader = !this.loader)
         },
         
         requestAlterarStatus(id, cancelar, motivoCancelamento, ativo) {
@@ -184,7 +322,7 @@ export default {
                 MotivoCancelamento: motivoCancelamento,
                 Ativo: ativo
             },
-            (response) => this.RetornoAlterarStatus(response),
+            (response) => this.EnableAlert("Concluido com sucesso.", "success"),
             (error) => this.RetornoErro(error),
             () => { 
                 this.loader = !this.loader 
@@ -193,17 +331,8 @@ export default {
             })
         },
 
-        RetornoAlterarStatus(response) {
-            
-            this.EnableAlert("Concluido com sucesso.", "success")
-            window.scrollTo(0,0);
-            console.log(response)
-        },
-
         requestReservas() {
             this.loader = !this.loader;
-
-            debugger
 
             let url = this.listaHistoricoEmpresa ?
                     'Reserva/'+this.dadosUsuario.Id+'/'+this.dadosUsuario.EmpresaId :
@@ -216,27 +345,30 @@ export default {
         },
 
         RetornoReservas(retorno) {
-            
             this.historicos = []
+            
             retorno.data.forEach(element => {
                 this.historicos.push({
                     Id: element.id,
+                    EmpresaId: element.empresaId,
                     Empresa: element.empresa.nome,
                     Data: this.FormatDate(new Date(element.dataReserva).toISOString().substring(0,10)),
-                    Horario: element.horario == null ? element.periodoId + ' - ' + element.periodo.descricao : this.parseTimeDate(element.horario),
+                    Horario: element.periodo != null ? element.periodoId + ' - ' + element.periodo.descricao : this.parseTimeDate(element.horario),
+                    Servico: element.servico != null ? element.servico.descricao + ' - R$ ' + parseFloat(element.servico.valor).toFixed(2) : null,
                     Pessoas: element.quantidadePessoas,
-                    Status: element.cancelada ? 'Cancelada' : element.ativo ? "Concluida" : "Aguardando",
+                    Status: this.RetornoStatus(element),
+                    Reservado: element.reservado,
                     EhComomoracao: element.ehComemoracao ? 'Sim' : 'Não',
-                    Observacoes: element.descricaoComemoracao,
+                    Observacoes: 'Observações: '+ element.descricaoComemoracao.replaceAll('\n', '<br\>'),
                     DescricaoCancelamento: element.motivoCancelamento,
-                    TempoCancelamento: element.empresa.empresaAdicional.tempoPermitidoCancelamento
+                    TempoCancelamento: element.empresa.empresaAdicional.tempoPermitidoCancelamento,
+                    Avaliacao: element.avaliado
                 })
                 
             });
         }
     },
     created() {
-        debugger
         this.requestReservas()
     },
 
@@ -258,6 +390,8 @@ export default {
     }
 }
 </script>
-<style>
-    
+<style scoped>
+    .complementar {
+        padding: 20px !important;
+    }
 </style>

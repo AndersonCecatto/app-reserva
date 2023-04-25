@@ -25,7 +25,7 @@
             type="phone"
             prepend-icon="mdi-text-box-edit"
             color="green"
-            v-mask="maskTelefone"
+            v-mask="maskTelefone1"
         />
         <v-text-field
             v-model="localEmail"
@@ -42,6 +42,7 @@
             prepend-icon="mdi-camera"
             :value="localImagem"
             @change="onFilePicked"
+            color="green"
         />
         <v-text-field
             v-model="localDataCadastro"
@@ -154,28 +155,7 @@ export default {
         }
     },
 
-    // created() {
-    //     debugger
-    //     if (this.RetornoDadosEmpresa.NameImagem == null)
-    //         return
-
-    //     this.localImagem = new File([this.RetornoDadosEmpresa.NameImagem], this.RetornoDadosEmpresa.NameImagem, {
-    //         type: "text/plain",
-    //     })
-
-    //     this.imagemName = this.RetornoDadosEmpresa.NameImagem
-    // },
-
     props: {
-        razaoSocial: String,
-        cnpj: String,
-        telefone: String,
-        email: String,
-        //enderecoId: Number,
-        //configuracoesEmpresaId: Number,
-        dataCadastro: String,
-        //empresaAdicionalId: Number,
-        NameImagem: String,
         dadosUsuario: Object,
         retornoEmpresa: Object
     }

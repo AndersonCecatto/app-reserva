@@ -40,6 +40,18 @@
                             <v-row class="py-5">
                                 {{ empresa.nome }}
                                 <v-spacer/>
+                                <v-rating
+                                    v-model="empresa.nota"
+                                    color="yellow darken-3"
+                                    background-color="grey darken-1"
+                                    empty-icon="$ratingFull"
+                                    half-increments
+                                    readonly
+                                    hover
+                                    small
+                                />
+                                <span class="text-caption">{{ empresa.quantidadeAvaliacoes }} Avaliações</span>
+                                <v-spacer/>
                                 <div
                                     v-if="empresa.exibirMensagemRapida"
                                     id="mensagem" 
@@ -77,7 +89,7 @@ export default {
         empresas: [],
         empresasView: [],
         search: '',
-        imagem: null
+        imagem: null,
     }),
     methods: {
         pesquisar(val) {
@@ -91,7 +103,7 @@ export default {
         requestEmpresas() {
             this.loader = !this.loader;
 
-            this.RequestGet(this.dadosUsuario.EmpresaId == '' ? 'Empresa' : 'Empresa/'+this.dadosUsuario.EmpresaId,
+            this.RequestGet(this.dadosUsuario.EmpresaId == '' ? 'Empresa' : 'Empresa/'+this.dadosUsuario.EmpresaId+'/BuscarAvaliacoes/true',
             (retorno) => this.RetornoEmpresas(retorno),
             (error) => this.RetornoErro(error),
             () => (this.loader = !this.loader))
@@ -105,11 +117,60 @@ export default {
         },
 
         preencherDadosEmpresa(element) {
-            
+            let nota = 0
+            let labelEndereco = element.endereco.logradouro +', '
+                                + element.endereco.numero + ' - '
+                                + element.endereco.bairro + ', '
+                                + element.endereco.cidade.nome
+
+            if (element.avaliacaos?.length > 0)
+                nota = element.avaliacaos.map(x => x.nota).reduce((a, b) => a + b) / element.avaliacaos.length
+
             this.empresas.push({
+                id: element.id,
+                nome: element.nome,
+                endereco: labelEndereco,
+                telefone: element.telefone,
+                imagem: window.atob(element.imagem),
+
+                configuracoesEmpresaId: element.configuracoesEmpresa.id,
+                diasAtendimento: element.configuracoesEmpresa.diasAtendimento,
+                timeInicial: this.parseTimeDate(element.configuracoesEmpresa.horarioInicio),
+                timeFinal: this.parseTimeDate(element.configuracoesEmpresa.horarioFim),
+                reservaPorPeriodo: element.configuracoesEmpresa.ehPorPeriodo,
+                utilizarServico: element.configuracoesEmpresa.utilizaServico,
+                quantidadePessoas: element.configuracoesEmpresa.quantidadePessoas,
+
+                bloquearReserva: element.empresaAdicional.bloqueiaReserva,
+                exibirMensagemRapida: element.empresaAdicional.exibirMensagemRapida,
+                mensagemRapida: element.empresaAdicional.mensagemRapida,
+                aceitaReservaAutomativamente: element.empresaAdicional.aceitaReservaAutomaticamente,
+                nota: nota,
+                quantidadeAvaliacoes: element.avaliacaos.length
+            })  
+
+            this.empresasView = this.empresas
+        },
+
+        requestBuscarAvaliacao(element) {
+            
+            this.loader = !this.loader;
+
+            this.RequestGet('Reserva/BuscarAvaliacaoEmpresa/'+element.id,
+            (response) => {
+
+                let labelEndereco = element.endereco.logradouro +', '
+                                + element.endereco.numero + ' - '
+                                + element.endereco.bairro + ', '
+                                + element.endereco.cidade.nome
+
+                if (response.data.length > 0)
+                    this.nota = response.data.map(x => x.nota).reduce((a, b) => a + b) / response.data.length
+
+                this.empresas.push({
                     id: element.id,
                     nome: element.nome,
-                    endereco: element.endereco.logradouro + '/' + element.endereco.bairro,
+                    endereco: labelEndereco,
                     telefone: element.telefone,
                     imagem: window.atob(element.imagem),
 
@@ -118,15 +179,23 @@ export default {
                     timeInicial: this.parseTimeDate(element.configuracoesEmpresa.horarioInicio),
                     timeFinal: this.parseTimeDate(element.configuracoesEmpresa.horarioFim),
                     reservaPorPeriodo: element.configuracoesEmpresa.ehPorPeriodo,
+                    utilizarServico: element.configuracoesEmpresa.utilizaServico,
                     quantidadePessoas: element.configuracoesEmpresa.quantidadePessoas,
 
                     bloquearReserva: element.empresaAdicional.bloqueiaReserva,
                     exibirMensagemRapida: element.empresaAdicional.exibirMensagemRapida,
-                    mensagemRapida: element.empresaAdicional.mensagemRapida
-            })
+                    mensagemRapida: element.empresaAdicional.mensagemRapida,
+                    aceitaReservaAutomativamente: element.empresaAdicional.aceitaReservaAutomaticamente,
+                    nota: this.nota,
+                    quantidadeAvaliacoes: response.data.length
+                })  
 
-            this.empresasView = this.empresas
-        }
+                this.empresasView = this.empresas
+
+            },
+            (error) => this.RetornoErro(error),
+            () => (this.loader = !this.loader))
+        },
     },
     
     created() {
@@ -140,7 +209,6 @@ export default {
 
             this.requestEmpresas()
         }
-
     },
 
     props: {

@@ -62,6 +62,7 @@
                 color="green"
                 @click="Salvar()"
                 >
+                <v-icon left> mdi-check-bold </v-icon>
                 Confirmar
             </v-btn>
         </v-row>

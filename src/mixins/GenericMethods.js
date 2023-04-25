@@ -7,9 +7,11 @@ export default {
         dialog: false,
         search: '',
         maskTelefone: '(##) #####-####',
+        maskTelefone1: '(##) ####-####',
         maskCnpj: '##.###.###/####-##',
         maskCep: '##.###-###',
         currentDate: new Date(new Date().toISOString()),
+        SimNao: ['Sim', 'Não'],
         required: [
             v => !!v || 'Campo Obrigatório'
         ],
@@ -26,12 +28,43 @@ export default {
 
             setTimeout(() => {
                 this.alerta = false
-            }, 2300)
+            }, 3500)
         },
         getColor(status) {
             if (status == 'Cancelada') return 'error'
             else if (status == 'Aguardando') return 'warning'
+            else if (status == 'Pendente') return 'dark'
+            else if (status == 'Reservado') return 'primary'
             else return 'success'
+        },
+
+        RetornoStatus(element) {
+
+            let dtHora = new Date(element.dataReserva).toISOString().substring(0,10)+ ' ' 
+                        + this.parseTimeDate(new Date(element.periodo == null ? element.horario : element.dataReserva))
+
+            let dataReserva = new Date(dtHora)
+
+            let dtAgora = new Date(new Date().toISOString())
+
+            if (element.periodo != null) {
+                dtAgora.setHours(0)
+                dtAgora.setMinutes(0)
+                dtAgora.setSeconds(0)
+                dtAgora.setMilliseconds(0)
+            }
+
+            if (!element.cancelada && !element.ativo && dataReserva < dtAgora)
+                return 'Pendente'
+
+            else if (element.cancelada)
+                return 'Cancelada'
+            else if (element.ativo)
+                return 'Concluida'
+            else if (element.reservado && !element.ativo)
+                return 'Reservado'
+            else
+                return "Aguardando"
         },
 
         RetornoErro(error) {
@@ -39,7 +72,6 @@ export default {
             let retorno = error.response == undefined || error.response.status == 401 ? error.message : error.response.data
 
             this.EnableAlert(retorno, "error")
-            window.scrollTo(0,0);
             console.log(error)
         },
 
@@ -65,6 +97,6 @@ export default {
         parseTimeDate(date) {
             if (!date) return null
             return new Date(date).getHours()+':'+(new Date(date).getMinutes()).toString().padStart(2, 0)
-        }
+        },
     }
 }

@@ -3,8 +3,7 @@
         :type='tipo'
         class="alert mt-3"
         dense
-        border="left"
-        >
+        border="left">
         {{ textoAlerta }}
     </v-alert>
 </template>
@@ -24,9 +23,10 @@ export default {
 </script>
 <style>
     .alert {
-        position: absolute;
+        position: fixed;
         width: auto;
-        right: 1% !important;
-        z-index: 9999999
+        right: 3% !important;
+        top: 3% !important;
+        z-index: 99
     }
 </style>

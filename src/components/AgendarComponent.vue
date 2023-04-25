@@ -39,6 +39,15 @@
                 color="green"
                 :rule="required"
             ></v-select>
+            <v-select
+                v-if="dadosEmpresa.utilizarServico"
+                v-model="localServico"
+                :items="servico"
+                label="Servico"
+                prepend-icon="mdi-list-box"
+                color="green"
+                :rule="required"
+            ></v-select>
             <v-text-field
                 v-model="QuantidadePessoas"
                 prepend-icon="mdi-account-plus"
@@ -107,8 +116,10 @@ export default {
         descricao: '',
         items: ['Sim', 'Não'],
         periodo: [],
+        servico: [],
         QuantidadePessoas: '',
         localPeriodo: null,
+        localServico: null,
         usuarioId: null,
         requiredPeopleRules: [
             v => v != null && v != 0 || 'Campo Obrigatório.'
@@ -116,7 +127,7 @@ export default {
         requiredRules: [
             v => v != null || 'Campo Obrigatório.',
         ],
-        rules: [v => v.length <= 50 || 'Máximo 50 caracteres'],
+        rules: [v => v.length <= 100 || 'Máximo 100 caracteres'],
     }),
     mixins: [GenericMethods, RequestMethods],
     methods: {
@@ -126,7 +137,6 @@ export default {
         },
 
         retornoData(retorno) {
-            debugger
             this.date = retorno
         },
 
@@ -144,18 +154,19 @@ export default {
                 dataCadastro: new Date().toISOString(),
                 horario: this.time != null ? this.parseTime(this.date, this.time) : null,
                 periodoId: this.localPeriodo != null ? this.localPeriodo.replace(/\D+/g, '') : null,
+                servicoId: this.localServico != null ? this.localServico.substr(0,5).replace(/\D+/g, '') : null,
                 empresaId: this.dadosEmpresa.id,
                 usuarioId: this.usuarioId ?? this.dadosUsuario.Id,
                 ativo: false,
                 quantidadePessoas: this.QuantidadePessoas,
                 ehComemoracao: this.comemoracao == 'Sim',
                 descricaoComemoracao: this.descricao,
-                cancelada: false
+                cancelada: false,
+                reservado: this.dadosEmpresa.aceitaReservaAutomativamente
             },
             () => 
                 {
                     this.EnableAlert("Concluido com sucesso.", "success")
-                    window.scrollTo(0,0);
                     this.$emit('reservado', true)
                 },
             (error) => this.RetornoErro(error),
@@ -174,7 +185,7 @@ export default {
 
             this.loader = !this.loader;
 
-            this.RequestGet('Periodo/'+this.dadosEmpresa.id,
+            this.RequestGet('Periodo/'+this.dadosEmpresa.id+'/false',
             (retorno) => {
                 retorno.data.forEach(element => {
                     this.periodo.push(element.id + ' - ' + element.descricao)
@@ -182,6 +193,24 @@ export default {
 
                 if (this.periodo.length > 0)
                     this.localPeriodo = this.periodo[0]
+                
+            }, 
+            (error) => this.RetornoErro(error),
+            () => (this.loader = !this.loader))
+        },
+
+        requestBuscarServicoPorEmpresaId() {
+
+            this.loader = !this.loader;
+
+            this.RequestGet('Servico/'+this.dadosEmpresa.id+'/false',
+            (retorno) => {
+                retorno.data.forEach(element => {
+                    this.servico.push(element.id + ' - ' + element.descricao + ' - R$ '+ parseFloat(element.valor).toFixed(2))
+                });
+
+                if (this.servico.length > 0)
+                    this.localServico = this.servico[0]
                 
             }, 
             (error) => this.RetornoErro(error),
@@ -213,8 +242,12 @@ export default {
     },
 
     created() {
+        
         if (this.dadosEmpresa.reservaPorPeriodo)
             this.requestBuscarPeriodoPorEmpresaId()
+
+        if (this.dadosEmpresa.utilizarServico)
+            this.requestBuscarServicoPorEmpresaId()
     },
 
     props: {

@@ -15,18 +15,20 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="green darken-1"
-            text
+            color="error"
+            outlined
             @click="resposta(false)"
           >
+          <v-icon left> mdi-close </v-icon>
             Cancelar
           </v-btn>
           <v-btn
-            color="green darken-1"
-            text
+            color="success"
+            outlined
             @click="resposta(true)"
           >
-            Ok
+          <v-icon left> mdi-check </v-icon>
+            Salvar
           </v-btn>
         </v-card-actions>
       </v-card>

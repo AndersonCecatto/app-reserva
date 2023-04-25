@@ -92,6 +92,7 @@
         <dialog-persistent-without-btn-component
             titulo="Cadastro Usuário"
             :dialogNew="dialog"
+            @fechar="CancelarUsuario"
             tamanho="800"
         >
             <template v-slot:text>
@@ -104,14 +105,6 @@
             </template>
             <template v-slot:actions>
                 <v-spacer/>
-                <v-btn
-                    outlined
-                    large
-                    color="error"
-                    @click="CancelarUsuario()"
-                    >
-                    Cancelar
-                </v-btn>
                 <v-btn
                     outlined
                     large
@@ -174,7 +167,6 @@ export default {
 
             if (response.data.token == null) {
                 this.EnableAlert("Usuário não encontrado.", "warning")
-                window.scrollTo(0,0);
                 return
             }
 
@@ -186,7 +178,6 @@ export default {
         retornoDialog(retorno) {
             
             this.dialog = !this.dialog
-            window.scrollTo(0,0);
 
             this.EnableAlert("Usuário cadastrado com sucesso.", "success")
         },
@@ -195,10 +186,9 @@ export default {
             this.salvarUsuario = !this.salvarUsuario
         },
 
-        CancelarUsuario() {
-            this.cancelarUsuario = !this.cancelarUsuario
-
-            this.dialog = !this.dialog
+        CancelarUsuario(retorno) {
+            this.cancelarUsuario = retorno
+            this.dialog = retorno
         }
        
     },

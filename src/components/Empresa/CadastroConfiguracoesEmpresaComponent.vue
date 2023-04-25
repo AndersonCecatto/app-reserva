@@ -32,6 +32,14 @@
             :rules="required"
         ></v-select>
         <v-select
+            v-model="localUtilizaServico"
+            :items="items"
+            label="Utiliza Servicos"
+            prepend-icon="mdi-list-box"
+            color="green"
+            :rules="required"
+        ></v-select>
+        <v-select
             v-model="localReservaPorMesa"
             :items="items"
             label="Reserva por mesas"
@@ -75,6 +83,7 @@
                 color="green"
                 @click="Salvar()"
                 >
+                <v-icon left> mdi-check-bold </v-icon>
                 Confirmar
             </v-btn>
         </v-row>
@@ -154,6 +163,7 @@ export default {
                 QuantidadePessoas: this.localReservaPorPessoas != "Sim" ? 0 : this.localQuantidadePessoas,
                 TempoReservaMinutos: 0,
                 EhPorPeriodo: this.localReservaPorPeriodo == "Sim",
+                utilizaServico: this.localUtilizaServico == "Sim",
                 DiasAtendimento: this.selecionarDiasAtendimentoBanco()
             },
             (retorno) => this.$emit('response', { success: true, response: retorno }),
@@ -244,6 +254,7 @@ export default {
         this.localQuantidadeMesas = this.retornoConfiguracoes.QuantidadeMesas
         this.localReservaPorPessoas = this.retornoConfiguracoes.ReservaPorPessoas
         this.localQuantidadePessoas = this.retornoConfiguracoes.QuantidadePessoas
+        this.localUtilizaServico = this.retornoConfiguracoes.UtilizaServico
         this.selecionarDiasAtendimento(this.retornoConfiguracoes.DiasAtendimento)
     },
 

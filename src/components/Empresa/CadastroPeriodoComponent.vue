@@ -1,20 +1,23 @@
 <template>
-    <div>
+    <v-card class="pb-3">
         <alert-component :texto-alerta="textoAlerta" :tipo='tipoAlerta' v-if="alerta == true"/>
-        <v-row>
-            <v-col cols="12" class="text-right">
-                <v-btn
-                    class="text-right"
-                    outlined
-                    large
-                    right
-                    color="primary"
-                    @click="novo()"
-                    >
+        <load-component :Ativo="loader"/>
+        <v-card-title>
+            Periodos
+            <v-spacer/>
+            <v-btn
+                class="text-right mr-3"
+                outlined
+                large
+                right
+                color="primary"
+                @click="novo()"
+                >
+                <v-icon left> mdi-plus </v-icon>
                     Novo
-                </v-btn>
-            </v-col>
-        </v-row>
+            </v-btn>
+        </v-card-title>
+        <v-card-text>
         <v-data-table
             :headers="headers"
             :items="periodos"
@@ -25,6 +28,8 @@
             :header-props="{
                 'sortByText': 'Ordenar'
             }"
+            :sort-desc.sync="sortDesc"
+            :sort-by.sync="sortBy"
         >
             <template v-slot:item.actions="{ item }">
                 <v-icon
@@ -49,17 +54,26 @@
             titulo="Cadastrar Periodo" 
             :dialog="dialog" 
             tamanho="400" 
-            @response="retornoDialog" 
+            @response="retornoDialog"
             :acao="acao">
                 <v-form>
                     <v-text-field
                         v-model="descricao"
                         label="Descrição"
                         prepend-icon="mdi-text-box-edit"
+                        color="green"
+                    />
+                    <v-select
+                        v-model="ativo"
+                        :items="SimNao"
+                        label="Ativo"
+                        prepend-icon="mdi-list-box"
+                        color="green"
                     />
                 </v-form>
         </dialog-persistent-component>
-    </div>
+        </v-card-text>
+    </v-card>
 </template>
 <script>
 
@@ -78,12 +92,16 @@ export default {
         headers: [
             { text: 'Código', width: "150", value: 'Id', },
             { text: 'Descricao', width: "750", value: 'Descricao', },
+            { text: 'Ativo', value: 'Ativo', },
             { text: 'Ações', value: 'actions', sortable: false, align: "center" }
         ],
         periodos: [],
+        ativo: 'Sim',
         descricao: null,
         acao: null,
         itemEnvio: null,
+        sortBy: 'Id',
+        sortDesc: true,
     }),
 
     methods: {
@@ -97,8 +115,8 @@ export default {
 
             this.loader = !this.loader;
 
-            this.RequestGet('Periodo/'+this.dadosUsuario.EmpresaId,
-            (retorno) => this.RetornoPeriodo(retorno), 
+            this.RequestGet('Periodo/'+this.dadosUsuario.EmpresaId+'/true',
+            (retorno) => this.RetornoPeriodo(retorno),
             (error) => this.$emit('response', { success: false, response: error }),
             () => (this.loader = !this.loader))
         },
@@ -107,7 +125,8 @@ export default {
             retorno.data.forEach(element => {
                 this.periodos.push({
                         Id: element.id,
-                        Descricao: element.descricao
+                        Descricao: element.descricao,
+                        Ativo: element.ativo ? 'Sim' : 'Não'
                 })
             });
         },
@@ -132,9 +151,12 @@ export default {
             {
                 Descricao: this.descricao,
                 EmpresaId: this.dadosUsuario.EmpresaId,
+                Ativo: this.ativo == 'Sim'
             },
-            (retorno) => this.$emit('response', { success: true, response: retorno }), 
-            (error) => this.$emit('response', { success: false, response: error }),
+            (retorno) => {
+                this.EnableAlert("Concluido com sucesso.", "success")
+            }, 
+            (error) => this.RetornoErro(error),
             () => {
                 this.loader = !this.loader
                 this.requestBuscarPeriodoPorEmpresaId()
@@ -148,8 +170,13 @@ export default {
             this.periodos = []
 
             this.RequestDelete('Periodo/'+item.Id,
-            (retorno) => this.$emit('response', { success: true, response: retorno }), 
-            (error) => this.$emit('response', { success: false, response: error }),
+            (retorno) => {
+                if (retorno.data.dados == null)
+                    this.EnableAlert(retorno.data.mensagem, "info")
+                else
+                    this.EnableAlert("Concluido com sucesso.", "success")
+            }, 
+            (error) => this.RetornoErro(error),
             () => {
                 this.loader = !this.loader
                 this.requestBuscarPeriodoPorEmpresaId()
@@ -160,6 +187,7 @@ export default {
             this.acao = 'Editar'
             this.itemEnvio = item
             this.descricao = item.Descricao
+            this.ativo = item.Ativo
 
             this.dialog = !this.dialog
         },
@@ -173,10 +201,13 @@ export default {
             {
                 Id: item.Id,
                 Descricao: this.descricao,
+                Ativo: this.ativo == 'Sim',
                 EmpresaId: this.dadosUsuario.EmpresaId,
             },
-            (retorno) => {this.$emit('response', { success: true, response: retorno })}, 
-            (error) => this.$emit('response', { success: false, response: error }),
+            (retorno) => {
+                this.EnableAlert("Concluido com sucesso.", "success")
+            }, 
+            (error) => this.RetornoErro(error),
             () => {
                 this.loader = !this.loader
                 this.requestBuscarPeriodoPorEmpresaId()

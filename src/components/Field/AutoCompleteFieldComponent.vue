@@ -10,6 +10,7 @@
         :prepend-icon="this.Icon"
         return-object
         auto-select-first
+        color="green"
       ></v-autocomplete>
 </template>
 <script>

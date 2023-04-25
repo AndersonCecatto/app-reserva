@@ -61,6 +61,7 @@
             titulo="Cadastro Funcionario"
             :dialogNew="dialog"
             tamanho="800"
+            @fechar="CancelarFuncionario"
         >
             <template v-slot:text>
                 <cadastro-usuario-component
@@ -74,17 +75,6 @@
             </template>
             <template v-slot:actions>
                 <v-spacer/>
-                <v-btn
-                    outlined
-                    large
-                    color="error"
-                    @click="CancelarFuncionario()"
-                    >
-                    <v-icon left>
-                        mdi-cancel
-                    </v-icon>
-                    Cancelar
-                </v-btn>
                 <v-btn
                     outlined
                     large
@@ -170,9 +160,8 @@ export default {
             this.salvarFuncionario = !this.salvarFuncionario
         },
 
-        CancelarFuncionario() {
+        CancelarFuncionario(retorno) {
             this.cancelarFuncionario = !this.cancelarFuncionario
-
             this.dialog = !this.dialog
         },
 

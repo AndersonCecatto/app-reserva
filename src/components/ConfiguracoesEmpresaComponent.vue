@@ -38,14 +38,6 @@
                         @response="Alerta"
                     />
                 </v-tab-item>
-                <v-tab v-if="RetornoDadosConfiguracoesEmpresa?.ReservaPorPeriodo == 'Sim'" >Periodo</v-tab>
-                <!-- <v-tab-item v-if="ReservaPorPeriodo != 'Não'"> -->
-                <v-tab-item>
-                    <cadastro-periodo-component 
-                        v-if="RetornoDadosConfiguracoesEmpresa?.ReservaPorPeriodo == 'Sim'" 
-                        :dados-usuario="dadosUsuario"
-                        @response="Alerta"/>
-                </v-tab-item>
             </v-tabs>
         </v-card-text>
         <load-component :Ativo="loader"/>
@@ -135,11 +127,9 @@ export default {
         Alerta(retorno) {
             if (retorno.success) {
                 this.EnableAlert("Concluido com sucesso.", "success")
-                window.scrollTo(0,0);
             } 
             else {
                 this.EnableAlert(retorno.response.message, "error")
-                window.scrollTo(0,0);
             }
         },
 
@@ -150,7 +140,7 @@ export default {
         requestEmpresa() {
             this.loader = !this.loader;
 
-            this.RequestGet('Empresa/'+this.dadosUsuario.EmpresaId,
+            this.RequestGet('Empresa/'+this.dadosUsuario.EmpresaId+'/BuscarAvaliacoes/false',
             (retorno) => this.RetornoEmpresa(retorno),
             (error) => this.RetornoErro(error),
             () => (this.loader = !this.loader))
@@ -192,7 +182,8 @@ export default {
                 QuantidadePessoas: response.data.configuracoesEmpresa.quantidadePessoas,
                 ReservaPorMesa: response.data.configuracoesEmpresa.ehPorMesas ? "Sim" : "Não",
                 QuantidadeMesas: response.data.configuracoesEmpresa.quantidadeMesas,
-                DiasAtendimento: response.data.configuracoesEmpresa.diasAtendimento
+                DiasAtendimento: response.data.configuracoesEmpresa.diasAtendimento,
+                UtilizaServico: response.data.configuracoesEmpresa.utilizaServico ? "Sim" : "Não",
             }
             
             this.RetornoDadosEmpresaAdicional = {

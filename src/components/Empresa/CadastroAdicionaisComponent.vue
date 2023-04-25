@@ -23,8 +23,17 @@
         ></v-select>
         <v-text-field
             v-model="localTempoPermitidoCancelamento"
-            prepend-icon="mdi-account-plus"
+            prepend-icon="mdi-clock-time-four-outline"
             label="Minutos permitidos cancelamento de reserva (Cliente)"
+            required
+            type="number"
+            pattern="\d*"
+            color="green"
+        />
+        <v-text-field
+            v-model="localTempoToleranciaCancelamento"
+            prepend-icon="mdi-clock-time-four-outline"
+            label="Minutos permitidos tolerancia cancelamento automático"
             required
             type="number"
             pattern="\d*"
@@ -54,6 +63,7 @@
                 color="green"
                 @click="SalvarAdicional()"
                 >
+                <v-icon left> mdi-check-bold </v-icon>
                 Confirmar
             </v-btn>
         </v-row>
@@ -78,9 +88,10 @@ export default {
         localPermiteReagendarReserva: null,
         localExibirMensagemRapida: null,
         localTempoPermitidoCancelamento: null,
-        localMensagemRapida: null,
+        localTempoToleranciaCancelamento: null,
+        localMensagemRapida: '',
         items: ['Sim', 'Não'],
-        rules: [v => v != null && v.length <= 50 || 'Máximo 50 caracteres'],
+        rules: [v => v.length <= 50 || 'Máximo 50 caracteres'],
     }),
 
     methods: {
@@ -95,6 +106,7 @@ export default {
                 AceitaReservaAutomaticamente: this.localAceitaReservaAutomaticamente == "Sim" ? true : false,
                 PermiteReagendarReserva: this.localPermiteReagendarReserva == "Sim" ? true : false,
                 TempoPermitidoCancelamento: this.localTempoPermitidoCancelamento,
+                TempoToleranciaCancelamento: this.localTempoToleranciaCancelamento,
                 ExibirMensagemRapida: this.localExibirMensagemRapida == "Sim" ? true : false,
                 MensagemRapida: this.localExibirMensagemRapida == "Sim" ? this.localMensagemRapida : this.mensagemRapida,
             },
@@ -104,13 +116,6 @@ export default {
         }
     },
     created() {
-        // this.localBloquearReserva = this.bloquearReserva,
-        // this.localAceitaReservaAutomaticamente = this.aceitaReservaAutomaticamente
-        // this.localPermiteReagendarReserva = this.permiteReagendarReserva
-        // this.localExibirMensagemRapida = this.exibirMensagemRapida
-        // this.localTempoPermitidoCancelamento = this.tempoPermitidoCancelamento
-        // this.localMensagemRapida = this.mensagemRapida
-
         this.localBloquearReserva = this.retornoEmpresaAdicional.BloquearReserva
         this.localAceitaReservaAutomaticamente = this.retornoEmpresaAdicional.AceitaReservaAutomaticamente
         this.localPermiteReagendarReserva = this.retornoEmpresaAdicional.PermiteReagendarReserva
@@ -120,13 +125,6 @@ export default {
     },
 
     props: {
-        // empresaAdicionalId: Number,
-        // bloquearReserva: String,
-        // aceitaReservaAutomaticamente: String,
-        // permiteReagendarReserva: String,
-        // exibirMensagemRapida: String,
-        // tempoPermitidoCancelamento: Number,
-        // mensagemRapida: String,
         retornoEmpresaAdicional: Object
     }
 }

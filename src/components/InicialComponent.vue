@@ -68,6 +68,8 @@
             <editar-usuario-component v-if="editarUsuarioComponent" :dadosUsuario="this.dadosUsuario"/>
             <listar-usuarios-component v-if="cadastroUsuarioComponent" :recebe-dados-usuario="this.dadosUsuario"/>
             <listar-funcionarios-component v-if="listarFuncionariosComponent" :dadosUsuario="this.dadosUsuario" />
+            <cadastro-periodo-component :dadosUsuario="this.dadosUsuario" v-if="cadastroPeriodoComponent" />
+            <servico-component :dadosUsuario="this.dadosUsuario" v-if="servicoComponent" />
         </v-main>
 
         <load-component :Ativo="loader"/>
@@ -88,6 +90,8 @@ import ListarUsuariosComponent from './Usuario/ListarUsuariosComponent.vue'
 import jwt_decode from "jwt-decode";
 import EditarUsuarioComponent from './Usuario/EditarUsuarioComponent.vue'
 import ListarFuncionariosComponent from './Usuario/ListarFuncionariosComponent.vue'
+import CadastroPeriodoComponent from './Empresa/CadastroPeriodoComponent.vue'
+import ServicoComponent from './ServicoComponent.vue'
 
 export default {
     components: { 
@@ -100,7 +104,9 @@ export default {
         CardPadraoComponent,
         ListarUsuariosComponent,
         EditarUsuarioComponent,
-        ListarFuncionariosComponent 
+        ListarFuncionariosComponent,
+        CadastroPeriodoComponent,
+        ServicoComponent
     },
 
     name: "InicialComponent",
@@ -115,6 +121,9 @@ export default {
         cadastroUsuarioComponent: false,
         listarFuncionariosComponent: false,
         editarUsuarioComponent: false,
+        cadastroPeriodoComponent: false,
+        servicoComponent: false,
+
         list: null,
         drawer: null,
         refresh: false,
@@ -122,21 +131,23 @@ export default {
         menusCliente: [
             { Id: 1, title: 'Home', icon: 'mdi-home' },
             { Id: 2, title: 'Histórico', icon: 'mdi-history' },
-            { Id: 6, title: 'Sair', icon: 'mdi-logout' },
+            { Id: 8, title: 'Sair', icon: 'mdi-logout' },
         ],
         menusEmpresa: [
             { Id: 1, title: 'Home', icon: 'mdi-home' },
             { Id: 2, title: 'Reservas', icon: 'mdi-history' },
             { Id: 3, title: 'Empresa', icon: 'mdi-domain' },
-            { Id: 4, title: 'Usuarios', icon: 'mdi-account-circle' },
-            { Id: 5, title: 'Funcionarios', icon: 'mdi-account-group' },
-            { Id: 6, title: 'Sair', icon: 'mdi-logout' },
+            { Id: 4, title: 'Usuarios', icon: 'mdi-account-group' },
+            { Id: 5, title: 'Periodos', icon: 'mdi-clipboard-text-clock' },
+            { Id: 6, title: 'Servicos', icon: 'mdi-offer' },
+            { Id: 7, title: 'Funcionarios', icon: 'mdi-badge-account' },
+            { Id: 8, title: 'Sair', icon: 'mdi-logout' },
         ],
         menusFuncionario: [
             { Id: 1, title: 'Home', icon: 'mdi-home' },
             { Id: 2, title: 'Reservas', icon: 'mdi-history' },
             { Id: 4, title: 'Usuarios', icon: 'mdi-account-circle' },
-            { Id: 6, title: 'Sair', icon: 'mdi-logout' },
+            { Id: 8, title: 'Sair', icon: 'mdi-logout' },
         ]
     }),
     methods: {
@@ -170,6 +181,8 @@ export default {
             this.inicialEmpresaComponent = false
             this.editarUsuarioComponent = false
             this.listarFuncionariosComponent = false
+            this.cadastroPeriodoComponent = false
+            this.servicoComponent = false
         },
         AcessarLink(item){
             this.DesabilitarComponentes()
@@ -189,8 +202,12 @@ export default {
             else if (item.Id == 4)
                 this.cadastroUsuarioComponent = true
             else if (item.Id == 5)
+                this.cadastroPeriodoComponent = true
+            else if (item.Id == 6)
+                this.servicoComponent = true
+            else if (item.Id == 7)
                 this.listarFuncionariosComponent = true
-            else if (item.Id == 6) {
+            else if (item.Id == 8) {
                 
                 this.loader = !this.loader;
 

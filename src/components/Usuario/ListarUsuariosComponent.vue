@@ -62,6 +62,7 @@
             titulo="Cadastro Usuário"
             :dialogNew="dialog"
             tamanho="800"
+            @fechar="CancelarUsuario"
         >
             <template v-slot:text>
                 <cadastro-usuario-component
@@ -73,17 +74,6 @@
             </template>
             <template v-slot:actions>
                 <v-spacer/>
-                <v-btn
-                    outlined
-                    large
-                    color="error"
-                    @click="CancelarUsuario()"
-                    >
-                    <v-icon left>
-                        mdi-cancel
-                    </v-icon>
-                    Cancelar
-                </v-btn>
                 <v-btn
                     outlined
                     large
@@ -101,23 +91,10 @@
         <dialog-persistent-without-btn-component
             :dialogNew="dialogHistorico"
             tamanho="800"
+            @fechar="close"
         >
             <template v-slot:text>
                 <historico-cliente-component :dados-usuario="dadosUsuario" :lista-historico-empresa="true"/>
-            </template>
-            <template v-slot:actions>
-                <v-spacer/>
-                <v-btn
-                    outlined
-                    large
-                    color="success"
-                    @click="VoltarHistorico()"
-                    >
-                    <v-icon left>
-                        mdi-arrow-u-left-top-bold
-                    </v-icon>
-                    Voltar
-                </v-btn>
             </template>
         </dialog-persistent-without-btn-component>
         <load-component :Ativo="loader"/>
@@ -163,7 +140,6 @@ export default {
 
         Historico(item) {
 
-            debugger
             this.dadosUsuario = {
                 Id: item.Id,
                 EmpresaId: this.recebeDadosUsuario?.EmpresaId
@@ -172,8 +148,8 @@ export default {
             this.dialogHistorico = !this.dialogHistorico
         },
 
-        VoltarHistorico() {
-            this.dialogHistorico = !this.dialogHistorico
+        close(retorno) {
+            this.dialogHistorico = retorno
         },
         
         requestUsuarios() {
@@ -204,7 +180,7 @@ export default {
             this.salvarUsuario = !this.salvarUsuario
         },
 
-        CancelarUsuario() {
+        CancelarUsuario(retorno) {
             this.cancelarUsuario = !this.cancelarUsuario
 
             this.dialog = !this.dialog

@@ -56,7 +56,7 @@
             />
             <v-select
                 v-model="localAtivo"
-                :items="items"
+                :items="SimNao"
                 label="Ativo"
                 prepend-icon="mdi-list-box"
                 color="green"
@@ -65,7 +65,7 @@
             />
             <v-select
                 v-model="localAdm"
-                :items="items"
+                :items="SimNao"
                 label="Administrador"
                 prepend-icon="mdi-list-box"
                 color="green"
@@ -108,8 +108,7 @@ export default {
         localFuncao: null,
         localAdm: 'Não',
         localDadosUsuario: null,
-        show1: false,
-        items: ['Sim', 'Não'],
+        show1: false
     }), 
     methods: {
         retornoDialog(retorno) {
@@ -127,18 +126,11 @@ export default {
                 this.localUsuario = null
                 this.localSenha = null
                 this.localTelefone = null
-                this.localAtivo = null
+                this.localAtivo = 'Sim'
                 this.localFuncao = null
-                this.localAdm = null
+                this.localAdm = 'Não'
             }
         },
-
-        // ValidarCampos() {
-        //     if (this.localNomeCompleto == null) return false
-        //     if (this.localUsuario == null) return false
-        //     if (this.localSenha == null) return false
-        //     if (this.localTelefone == null) return false
-        // },
 
         Salvar() {
 
@@ -146,8 +138,6 @@ export default {
                 return 
 
             this.loader = !this.loader;
-
-            debugger
 
             this.RequestPost('Usuario/InserirCliente',
             {
@@ -163,9 +153,9 @@ export default {
                 Administrador: this.localAdm == 'Sim' ?? false,
                 Edicao: false
             },
-                (retorno) => this.RetornoUsuario(retorno), 
-                (error) => this.RetornoErro(error),
-                () => (this.loader = !this.loader))
+            (retorno) => this.RetornoUsuario(retorno), 
+            (error) => this.RetornoErro(error),
+            () => (this.loader = !this.loader))
         },
 
         Editar() {
@@ -179,7 +169,6 @@ export default {
         requisicaoEditar() {
 
             this.loader = !this.loader;
-            debugger
 
             this.RequestPut('Usuario',
             {
@@ -215,7 +204,6 @@ export default {
 
         atribuirValores(val) {
             
-            debugger
             this.localNomeCompleto = val.Nome
             this.localUsuario = val.Login
             this.localSenha = val.Senha
@@ -244,14 +232,20 @@ export default {
             debugger
             if (val != null && this.acao == "Editar")
                 this.atribuirValores(val)
+            else
+                this.limparCampos()
         },
         dadosUsuario(val) {
+            debugger
             if (val != null && this.acao == "Editar")
                 this.atribuirValores(val)
+            else
+                this.limparCampos()
         }
     },
 
     created() {
+        debugger
         this.localDadosUsuario = this.dadosUsuario
     },
 

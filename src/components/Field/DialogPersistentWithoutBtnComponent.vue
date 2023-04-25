@@ -9,6 +9,12 @@
         <v-card>
           <v-card-title class="text-h5">
               {{ titulo }}
+              <v-spacer/>
+              <v-icon
+                @click="close(item)"
+              >
+                mdi-close
+              </v-icon>
           </v-card-title>
           <v-card-text>
               <slot name="text"></slot>
@@ -38,6 +44,11 @@ export default {
     methods: {
         resposta() {
             this.$emit('response', { response: this.item, acao: this.acao})
+        },
+
+        close() {
+          debugger
+          this.$emit('fechar', false)
         }
     },
     props: {

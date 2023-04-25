@@ -1,5 +1,5 @@
 <template>
-    <v-overlay :value="Ativo" z-index="6" opacity="0.5">
+    <v-overlay :value="Ativo" z-index="6" opacity="0.5" class="load">
         <v-progress-circular
           indeterminate
           :size="70"
@@ -18,5 +18,7 @@ export default {
 }
 </script>
 <style scoped>
-  
+  .load {
+    z-index: 9999 !important
+  }
 </style>
